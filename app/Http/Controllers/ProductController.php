@@ -15,6 +15,7 @@ class ProductController extends Controller
             'media',
             'categories',
             'collections',
+            'pairings' => fn ($q) => $q->where('products.is_active', true)->with(['media', 'variants']),
         ]);
 
         $related = Product::published()

@@ -40,6 +40,16 @@ class Product extends Model implements HasMedia
         return $this->belongsToMany(Collection::class);
     }
 
+    /**
+     * "Style it with" — suggested matching pieces (complete-the-look).
+     */
+    public function pairings(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'product_pairings', 'product_id', 'paired_product_id')
+            ->withPivot('sort_order')
+            ->orderByPivot('sort_order');
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('gallery');

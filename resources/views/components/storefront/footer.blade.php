@@ -14,12 +14,12 @@
             <div class="lg:col-span-1">
                 <h3 class="font-serif text-2xl uppercase tracking-wide">{{ config('app.name') }}</h3>
                 <p class="mt-4 text-sm leading-relaxed text-white/60">
-                    Omani fashion house celebrating heritage through contemporary design since 2006.
+                    {{ __('Omani fashion house celebrating heritage through contemporary design since 2006.') }}
                 </p>
             </div>
 
             <div>
-                <h4 class="text-xs uppercase tracking-[0.2em] text-white/50">Shop</h4>
+                <h4 class="text-xs uppercase tracking-[0.2em] text-white/50">{{ __('Shop') }}</h4>
                 <ul class="mt-4 space-y-2 text-sm text-white/80">
                     <li><a href="/collections" class="hover:text-accent">Collections</a></li>
                     <li><a href="/category/ready-to-wear" class="hover:text-accent">Ready-to-Wear</a></li>
@@ -29,7 +29,7 @@
             </div>
 
             <div>
-                <h4 class="text-xs uppercase tracking-[0.2em] text-white/50">Information</h4>
+                <h4 class="text-xs uppercase tracking-[0.2em] text-white/50">{{ __('Information') }}</h4>
                 <ul class="mt-4 space-y-2 text-sm text-white/80">
                     <li><a href="/about" class="hover:text-accent">About Us</a></li>
                     <li><a href="/size-guide" class="hover:text-accent">Size Guide</a></li>
@@ -40,8 +40,8 @@
             </div>
 
             <div>
-                <h4 class="text-xs uppercase tracking-[0.2em] text-white/50">Newsletter</h4>
-                <p class="mt-4 text-sm text-white/70">Subscribe for 10% off your first order.</p>
+                <h4 class="text-xs uppercase tracking-[0.2em] text-white/50">{{ __('Newsletter') }}</h4>
+                <p class="mt-4 text-sm text-white/70">{{ __('Subscribe for 10% off your first order.') }}</p>
                 <form action="/newsletter" method="POST" class="mt-4 flex">
                     @csrf
                     <input type="email" name="email" required placeholder="Email address"

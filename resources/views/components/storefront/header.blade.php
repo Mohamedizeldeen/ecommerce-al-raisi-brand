@@ -4,6 +4,7 @@
         ['label' => 'Ready-to-Wear', 'url' => '/category/ready-to-wear'],
         ['label' => 'Accessories', 'url' => '/category/accessories'],
         ['label' => 'Lifestyle', 'url' => '/category/lifestyle'],
+        ['label' => 'The Atelier', 'url' => '/atelier'],
         ['label' => 'About', 'url' => '/about'],
         ['label' => 'Contact', 'url' => '/contact'],
     ];
@@ -14,7 +15,7 @@
     :class="scrolled ? 'bg-white/85 shadow-[0_1px_0_rgba(22,19,15,0.08)] backdrop-blur-md' : 'bg-white'">
     <div class="mx-auto max-w-7xl px-4 sm:px-6">
         <div class="flex h-20 items-center justify-between gap-4">
-            <button @click="open = ! open" class="-ml-2 p-2 text-ink lg:hidden" aria-label="Toggle menu">
+            <button @click="open = ! open" class="-ml-2 p-2 text-ink xl:hidden" aria-label="Toggle menu">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
                 </svg>
@@ -24,14 +25,15 @@
                 {{ config('app.name') }}
             </a>
 
-            <nav class="hidden items-center gap-9 text-[11px] uppercase tracking-[0.22em] text-ink/80 lg:flex">
+            <nav class="hidden items-center gap-6 text-[11px] uppercase tracking-[0.18em] text-ink/80 xl:flex">
                 @foreach ($nav as $item)
-                    <a href="{{ $item['url'] }}" class="link-underline hover:text-accent">{{ $item['label'] }}</a>
+                    <a href="{{ $item['url'] }}" class="link-underline whitespace-nowrap hover:text-accent">{{ __($item['label']) }}</a>
                 @endforeach
             </nav>
 
             <div class="flex items-center gap-4 text-ink sm:gap-5">
-                <a href="/search" aria-label="Search" class="transition hover:text-accent">
+                <x-storefront.region-switcher />
+                <a href="/search" aria-label="{{ __('Search') }}" class="transition hover:text-accent">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                     </svg>
@@ -52,10 +54,10 @@
         </div>
     </div>
 
-    <div x-show="open" x-cloak x-transition.origin.top.duration.300ms class="border-t border-stone-soft bg-white lg:hidden">
+    <div x-show="open" x-cloak x-transition.origin.top.duration.300ms class="border-t border-stone-soft bg-white xl:hidden">
         <nav class="flex flex-col px-4 py-3 text-sm uppercase tracking-[0.15em] text-ink/80">
             @foreach ($nav as $item)
-                <a href="{{ $item['url'] }}" class="py-2 hover:text-accent">{{ $item['label'] }}</a>
+                <a href="{{ $item['url'] }}" class="py-2 hover:text-accent">{{ __($item['label']) }}</a>
             @endforeach
         </nav>
     </div>

@@ -1,7 +1,9 @@
 @props(['title' => null, 'description' => null])
 @php($cartCount = app(\App\Services\CartService::class)->count())
+@php($locale = app()->getLocale())
+@php($dir = config('regions.locales.'.$locale.'.dir', 'ltr'))
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ $locale }}" dir="{{ $dir }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -29,6 +31,9 @@
     <x-storefront.toasts />
     <x-storefront.cart-drawer />
     <x-storefront.age-gate />
+    <x-storefront.assistant />
+    <x-storefront.cookie-consent />
+    <x-storefront.welcome-offer />
 
     @if (session('success') || session('error'))
         @push('scripts')

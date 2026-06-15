@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\AtelierController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
@@ -22,6 +25,8 @@ Route::get('/collections', [CollectionController::class, 'index'])->name('collec
 Route::get('/collections/{collection:slug}', [CollectionController::class, 'show'])->name('collections.show');
 
 Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+
+Route::get('/atelier', [AtelierController::class, 'index'])->name('atelier');
 
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 
@@ -69,6 +74,14 @@ Route::get('/contact', [ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [ContactController::class, 'submit']);
 
 Route::post('/newsletter', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+
+// Language + currency preference (region switcher).
+Route::post('/preferences', [PreferenceController::class, 'update'])->name('preferences.update');
+
+// Storefront AI assistant (Gemini, grounded in store data only).
+Route::post('/assistant/chat', [AssistantController::class, 'chat'])
+    ->middleware('throttle:20,1')
+    ->name('assistant.chat');
 
 Route::post('/age-verify', function () {
     return back()->withCookie(cookie('age_verified', '1', 60 * 24 * 365));

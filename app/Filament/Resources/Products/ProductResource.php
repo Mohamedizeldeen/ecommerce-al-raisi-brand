@@ -66,6 +66,14 @@ class ProductResource extends Resource
             Section::make('Organisation')->columns(2)->schema([
                 Select::make('categories')->relationship('categories', 'name')->multiple()->preload(),
                 Select::make('collections')->relationship('collections', 'name')->multiple()->preload(),
+                Select::make('pairings')
+                    ->relationship('pairings', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->label('Style it with')
+                    ->helperText('Matching pieces shown on the product page — belts, bags, scarves, jewellery.')
+                    ->columnSpanFull(),
                 Toggle::make('is_active')->default(true),
                 Toggle::make('is_featured'),
                 TextInput::make('sort_order')->numeric()->default(0),

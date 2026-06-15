@@ -1,8 +1,9 @@
 @php
+    $freeShipping = money((int) \App\Models\Setting::get('free_shipping_threshold_baisa', 100000));
     $messages = [
-        'Complimentary shipping on orders over OMR100.000',
-        '10% off your first order — code WELCOME10',
-        'Handcrafted in the Sultanate of Oman',
+        __('Complimentary shipping on orders over :amount', ['amount' => $freeShipping]),
+        __('10% off your first order — code WELCOME10'),
+        __('Handcrafted in the Sultanate of Oman'),
     ];
 @endphp
 

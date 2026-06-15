@@ -4,33 +4,40 @@
     $colors = $product->variants->filter(fn ($v) => $v->color)
         ->map(fn ($v) => ['name' => $v->color, 'hex' => $v->color_hex])
         ->unique('name')->values();
+    // Map each colour to an image: a gallery photo tagged with that colour if one
+    // exists (media custom property 'color'), otherwise a distinct gallery image so
+    // the swatch always changes the view. Upload colour-tagged photos for exact matches.
+    $galleryMedia = $product->getMedia('gallery');
+    $colorImages = [];
+    foreach ($colors as $i => $c) {
+        $tagged = $galleryMedia->first(fn ($m) => strcasecmp((string) $m->getCustomProperty('color'), (string) $c['name']) === 0);
+        $colorImages[$c['name']] = $tagged?->getUrl() ?? ($gallery[$i % max(count($gallery), 1)] ?? null);
+    }
     $variantData = $product->variants->map(fn ($v) => [
         'id' => $v->id,
         'size' => $v->size,
         'color' => $v->color,
-        'price' => format_omr($v->price_baisa),
+        'price' => money((int) $v->price_baisa),
         'stock' => (int) $v->stock_qty,
     ])->values();
     $metaDescription = $product->meta_description ?: \Illuminate\Support\Str::limit(strip_tags((string) $product->description), 150);
 @endphp
 
 <x-layouts.storefront :title="$product->name" :description="$metaDescription">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12" x-data="productPage(@js($variantData))">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12" x-data="productPage(@js($variantData), @js($colorImages), @js($gallery))">
         <div class="grid gap-10 lg:grid-cols-2">
-            {{-- Gallery --}}
-            <div class="space-y-4 lg:sticky lg:top-28 lg:self-start" x-data="{ active: 0 }">
+            {{-- Gallery (main image follows the selected colour) --}}
+            <div class="space-y-4 lg:sticky lg:top-28 lg:self-start">
                 <div class="aspect-[4/5] overflow-hidden bg-sand">
-                    @foreach ($gallery as $i => $img)
-                        <img src="{{ $img }}" alt="{{ $product->name }}" x-show="active === {{ $i }}"
-                            class="h-full w-full object-cover">
-                    @endforeach
+                    <img src="{{ $gallery[0] ?? '' }}" :src="mainImage" alt="{{ $product->name }}"
+                        class="h-full w-full object-cover transition-opacity duration-300">
                 </div>
                 @if (count($gallery) > 1)
                     <div class="flex gap-3">
-                        @foreach ($gallery as $i => $img)
-                            <button type="button" @click="active = {{ $i }}"
+                        @foreach ($gallery as $img)
+                            <button type="button" @click="mainImage = @js($img)"
                                 class="aspect-square w-20 overflow-hidden bg-sand ring-1"
-                                :class="active === {{ $i }} ? 'ring-ink' : 'ring-transparent'">
+                                :class="mainImage === @js($img) ? 'ring-ink' : 'ring-transparent'">
                                 <img src="{{ $img }}" class="h-full w-full object-cover" alt="">
                             </button>
                         @endforeach
@@ -44,7 +51,7 @@
                     <p class="text-xs uppercase tracking-[0.25em] text-accent">{{ $product->collections->first()->name }}</p>
                 @endif
                 <h1 class="mt-2 text-4xl text-ink">{{ $product->name }}</h1>
-                <p class="mt-4 text-xl text-stone-600" x-text="price">{{ $product->formatted_price }}</p>
+                <p class="mt-4 text-xl text-stone-600" x-text="price">{{ money((int) $product->base_price_baisa) }}</p>
 
                 @if ($product->description)
                     <div class="mt-6 leading-relaxed text-stone-600">{!! nl2br(e($product->description)) !!}</div>
@@ -121,6 +128,19 @@
             </div>
         </div>
 
+        {{-- #11 Style it with — complete the look --}}
+        @if ($product->pairings->isNotEmpty())
+            <section class="mt-24">
+                <h2 class="mb-3 text-center text-3xl text-ink">Style it with</h2>
+                <p class="mb-12 text-center text-sm text-stone-500">Complete the look with these matching pieces.</p>
+                <div class="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-4">
+                    @foreach ($product->pairings as $pair)
+                        <x-storefront.product-card :product="$pair" />
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         @if ($related->isNotEmpty())
             <section class="mt-24">
                 <h2 class="mb-12 text-center text-3xl text-ink">You may also like</h2>
@@ -136,11 +156,20 @@
     @push('scripts')
         <script>
             document.addEventListener('alpine:init', () => {
-                Alpine.data('productPage', (variants) => ({
+                Alpine.data('productPage', (variants, colorImages, gallery) => ({
                     variants,
+                    colorImages,
+                    gallery,
                     size: null,
                     color: null,
-                    defaultPrice: @js($product->formatted_price),
+                    mainImage: gallery[0] ?? '',
+                    defaultPrice: @js(money((int) $product->base_price_baisa)),
+                    init() {
+                        // Selecting a colour swaps the main image to that colour's photo.
+                        this.$watch('color', (value) => {
+                            if (value && this.colorImages[value]) this.mainImage = this.colorImages[value];
+                        });
+                    },
                     get needsSize() { return this.variants.some(v => v.size) },
                     get needsColor() { return this.variants.some(v => v.color) },
                     get current() {

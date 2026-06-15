@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Setting;
+use App\Models\Showcase;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -61,6 +62,14 @@ class DatabaseSeeder extends Seeder
         $this->makeProducts(5, $leather, [$aw24, $aw23], ['S', 'M', 'L'], colorsPerProduct: 2);
         $this->makeProducts(5, $lifestyle, [$voyage, $ss24], [null], colorsPerProduct: 1, singleVariant: true);
 
+        // --- Style-it-with pairings (complete the look) ----------------------
+        $accessoryIds = Product::whereHas('categories', fn ($q) => $q->whereIn('slug', ['accessories-soft', 'accessories-leather', 'lifestyle']))->pluck('id')->all();
+        Product::whereHas('categories', fn ($q) => $q->where('slug', 'ready-to-wear'))->get()
+            ->each(function (Product $product) use ($accessoryIds) {
+                $pick = collect($accessoryIds)->shuffle()->take(3)->values();
+                $product->pairings()->sync($pick->mapWithKeys(fn ($id, $i) => [$id => ['sort_order' => $i]])->all());
+            });
+
         // --- Coupon ----------------------------------------------------------
         Coupon::create([
             'code' => 'WELCOME10',
@@ -83,6 +92,17 @@ class DatabaseSeeder extends Seeder
 
         foreach ($settings as $key => $value) {
             Setting::put($key, $value);
+        }
+
+        // --- The Atelier (behind the scenes / fashion shows) -----------------
+        $showcases = [
+            ['title' => 'Spring/Summer 2026 Runway', 'subtitle' => 'Muscat · Private Viewing', 'type' => 'fashion_show', 'sort_order' => 0, 'description' => 'The full film from our latest runway — twenty years of the house, reimagined on the catwalk.'],
+            ['title' => 'Inside the Atelier', 'subtitle' => 'Hand-finishing & fittings', 'type' => 'behind_the_scenes', 'sort_order' => 1, 'description' => 'A quiet morning at the cutting table, where each piece is shaped, pinned and hand-finished in limited runs.'],
+            ['title' => 'The Art of the Print', 'subtitle' => 'From sketch to silk', 'type' => 'design', 'sort_order' => 2, 'description' => 'Following a motif from first sketch to printed silk — the story behind the prints that define the house.'],
+        ];
+
+        foreach ($showcases as $showcase) {
+            Showcase::create($showcase);
         }
     }
 

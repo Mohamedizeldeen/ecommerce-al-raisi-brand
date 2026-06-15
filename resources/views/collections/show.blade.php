@@ -1,10 +1,12 @@
 <x-layouts.storefront :title="$collection->name" :description="$collection->description">
-    <section class="bg-sand">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 py-16 text-center">
-            <p class="text-xs uppercase tracking-[0.25em] text-accent">{{ $collection->season ?? $collection->type->getLabel() }}</p>
-            <h1 class="mt-3 text-4xl text-ink lg:text-5xl">{{ $collection->name }}</h1>
+    <section class="relative overflow-hidden">
+        <img src="{{ $collection->coverImageUrl() }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+        <div class="absolute inset-0 bg-ink/55"></div>
+        <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-28 text-center text-white">
+            <p class="text-xs uppercase tracking-[0.25em] text-white/80">{{ $collection->season ?? $collection->type->getLabel() }}</p>
+            <h1 class="mt-3 text-4xl lg:text-6xl">{{ $collection->name }}</h1>
             @if ($collection->description)
-                <p class="mx-auto mt-4 max-w-2xl text-stone-600">{{ $collection->description }}</p>
+                <p class="mx-auto mt-4 max-w-2xl text-white/80">{{ $collection->description }}</p>
             @endif
         </div>
     </section>

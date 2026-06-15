@@ -2,14 +2,8 @@
 
 <a href="{{ route('products.show', $product) }}" class="group block">
     <div class="relative aspect-[4/5] overflow-hidden bg-sand">
-        @if ($url = $product->primaryImageUrl())
-            <img src="{{ $url }}" alt="{{ $product->name }}" loading="lazy"
-                class="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
-        @else
-            <div class="flex h-full w-full items-center justify-center px-6 text-center transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]">
-                <span class="font-serif text-xl leading-snug text-accent/70">{{ $product->name }}</span>
-            </div>
-        @endif
+        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" loading="lazy"
+            class="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
 
         @unless ($product->in_stock)
             <span class="absolute left-3 top-3 z-10 bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-ink">Sold Out</span>

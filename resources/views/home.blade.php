@@ -1,28 +1,27 @@
 <x-layouts.storefront>
     {{-- Hero --}}
-    <section class="relative flex min-h-[88vh] items-center justify-center overflow-hidden bg-sand">
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-sand"></div>
-        <div class="pointer-events-none absolute -right-32 top-10 h-[28rem] w-[28rem] rounded-full bg-accent/10 blur-3xl"></div>
-        <div class="pointer-events-none absolute -left-24 bottom-0 h-80 w-80 rounded-full bg-stone-soft/50 blur-3xl"></div>
+    <section class="relative flex min-h-[90vh] items-center justify-center overflow-hidden">
+        <img src="{{ asset('images/heroes/hero.jpg') }}" alt="" class="absolute inset-0 h-full w-full object-cover animate-fade-in">
+        <div class="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/45 to-ink/75"></div>
 
-        <div class="relative z-10 mx-auto max-w-3xl px-4 text-center">
-            <p class="animate-fade-up text-xs uppercase tracking-[0.4em] text-accent" style="animation-delay:.1s">Omani Fashion House · Since 2006</p>
-            <h1 class="animate-fade-up mt-6 text-6xl leading-[0.92] text-ink sm:text-7xl lg:text-[7.5rem]" style="animation-delay:.25s">
-                Echoes<br><span class="italic text-accent-dark">of Time</span>
+        <div class="relative z-10 mx-auto max-w-3xl px-4 text-center text-white">
+            <p class="animate-fade-up text-xs uppercase tracking-[0.4em] text-white/80" style="animation-delay:.1s">Omani Fashion House · Since 2006</p>
+            <h1 class="animate-fade-up mt-6 text-6xl leading-[0.92] sm:text-7xl lg:text-[7.5rem]" style="animation-delay:.25s">
+                Echoes<br><span class="italic text-white/85">of Time</span>
             </h1>
-            <p class="animate-fade-up mx-auto mt-8 max-w-xl text-base leading-relaxed text-stone-600" style="animation-delay:.4s">
+            <p class="animate-fade-up mx-auto mt-8 max-w-xl text-base leading-relaxed text-white/80" style="animation-delay:.4s">
                 A twenty-year celebration of Omani heritage, reimagined for the modern wardrobe.
             </p>
             <div class="animate-fade-up mt-10" style="animation-delay:.55s">
                 <a href="{{ route('collections.index') }}"
-                    class="group inline-flex items-center gap-3 bg-ink px-9 py-4 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-accent">
+                    class="group inline-flex items-center gap-3 bg-white px-9 py-4 text-xs uppercase tracking-[0.25em] text-ink transition hover:bg-accent hover:text-white">
                     Shop Collections
                     <span class="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
                 </a>
             </div>
         </div>
 
-        <div class="animate-scroll-cue absolute bottom-8 left-1/2 -translate-x-1/2 text-ink/50">
+        <div class="animate-scroll-cue absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
@@ -39,14 +38,15 @@
             <div class="grid gap-6 md:grid-cols-3">
                 @foreach ($featuredCollections as $collection)
                     <a href="{{ route('collections.show', $collection) }}" x-data
-                        class="reveal group relative block aspect-[3/4] overflow-hidden bg-gradient-to-b from-sand to-stone-soft"
+                        class="reveal group relative block aspect-[3/4] overflow-hidden bg-stone-soft"
                         x-intersect.once="$el.classList.add('is-visible')" style="transition-delay: {{ $loop->index * 120 }}ms">
-                        <div class="relative flex h-full w-full flex-col items-center justify-center text-center transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
-                            <p class="text-xs uppercase tracking-[0.25em] text-accent">{{ $collection->season ?? $collection->type->getLabel() }}</p>
-                            <h3 class="mt-2 font-serif text-3xl text-ink">{{ $collection->name }}</h3>
-                        </div>
-                        <div class="absolute inset-x-0 bottom-0 flex justify-center pb-8 opacity-0 transition duration-500 group-hover:opacity-100">
-                            <span class="bg-ink px-6 py-2 text-[11px] uppercase tracking-[0.2em] text-white">Explore</span>
+                        <img src="{{ $collection->coverImageUrl($loop->index) }}" alt="{{ $collection->name }}"
+                            class="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"></div>
+                        <div class="absolute inset-x-0 bottom-0 p-6 text-center text-white">
+                            <p class="text-xs uppercase tracking-[0.25em] text-white/80">{{ $collection->season ?? $collection->type->getLabel() }}</p>
+                            <h3 class="mt-2 font-serif text-3xl">{{ $collection->name }}</h3>
+                            <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.2em] opacity-0 transition duration-500 group-hover:opacity-100">Explore &rarr;</span>
                         </div>
                     </a>
                 @endforeach

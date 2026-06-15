@@ -32,6 +32,33 @@ class Collection extends Model
         $query->where('is_active', true);
     }
 
+    /**
+     * Cover image: the uploaded cover if set, otherwise a deterministic free
+     * editorial image so collection cards/headers always have a backdrop.
+     */
+    public function coverImageUrl(int $offset = 0): string
+    {
+        if ($this->cover_image) {
+            return \Illuminate\Support\Str::startsWith($this->cover_image, ['http://', 'https://'])
+                ? $this->cover_image
+                : asset('storage/'.$this->cover_image);
+        }
+
+        static $pool = null;
+
+        if ($pool === null) {
+            $files = glob(public_path('images/collections/*.jpg')) ?: [];
+            sort($files);
+            $pool = array_map(fn ($file) => asset('images/collections/'.basename($file)), $files);
+        }
+
+        if ($pool === []) {
+            return asset('images/heroes/hero.jpg');
+        }
+
+        return $pool[((int) $this->id + $offset) % count($pool)];
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

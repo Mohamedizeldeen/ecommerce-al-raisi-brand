@@ -88,4 +88,40 @@ class Product extends Model implements HasMedia
     {
         return $this->getMedia('gallery')->map(fn ($media) => $media->getUrl())->all();
     }
+
+    /**
+     * Image for cards/lists: uploaded media if present, otherwise a deterministic
+     * free placeholder image so the storefront never shows an empty tile.
+     */
+    public function displayImageUrl(int $offset = 0): string
+    {
+        return $this->primaryImageUrl() ?? $this->placeholderImageUrl($offset);
+    }
+
+    /** @return list<string> Product-page gallery: media, else three placeholders. */
+    public function displayGalleryUrls(): array
+    {
+        $urls = $this->galleryUrls();
+
+        return ! empty($urls)
+            ? $urls
+            : [$this->placeholderImageUrl(0), $this->placeholderImageUrl(1), $this->placeholderImageUrl(2)];
+    }
+
+    public function placeholderImageUrl(int $offset = 0): string
+    {
+        static $pool = null;
+
+        if ($pool === null) {
+            $files = glob(public_path('images/products/*.jpg')) ?: [];
+            sort($files);
+            $pool = array_map(fn ($file) => asset('images/products/'.basename($file)), $files);
+        }
+
+        if ($pool === []) {
+            return 'https://picsum.photos/seed/'.$this->id.'/800/1000?grayscale';
+        }
+
+        return $pool[((int) $this->id + $offset) % count($pool)];
+    }
 }

@@ -1,5 +1,5 @@
 @php
-    $gallery = $product->galleryUrls();
+    $gallery = $product->displayGalleryUrls();
     $sizes = $product->variants->pluck('size')->filter()->unique()->values();
     $colors = $product->variants->filter(fn ($v) => $v->color)
         ->map(fn ($v) => ['name' => $v->color, 'hex' => $v->color_hex])
@@ -20,16 +20,10 @@
             {{-- Gallery --}}
             <div class="space-y-4 lg:sticky lg:top-28 lg:self-start" x-data="{ active: 0 }">
                 <div class="aspect-[4/5] overflow-hidden bg-sand">
-                    @if (count($gallery))
-                        @foreach ($gallery as $i => $img)
-                            <img src="{{ $img }}" alt="{{ $product->name }}" x-show="active === {{ $i }}"
-                                class="h-full w-full object-cover">
-                        @endforeach
-                    @else
-                        <div class="flex h-full w-full items-center justify-center px-8 text-center">
-                            <span class="font-serif text-3xl text-accent/60">{{ $product->name }}</span>
-                        </div>
-                    @endif
+                    @foreach ($gallery as $i => $img)
+                        <img src="{{ $img }}" alt="{{ $product->name }}" x-show="active === {{ $i }}"
+                            class="h-full w-full object-cover">
+                    @endforeach
                 </div>
                 @if (count($gallery) > 1)
                     <div class="flex gap-3">

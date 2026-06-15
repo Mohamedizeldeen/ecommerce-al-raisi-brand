@@ -14,7 +14,18 @@ const hasCookie = (name) => document.cookie.split('; ').some((c) => c.startsWith
 Alpine.data('cookieConsent', () => ({
     show: false,
     init() {
-        this.show = ! hasCookie('cookie_consent');
+        if (hasCookie('cookie_consent')) return;
+        // Avoid stacking with the welcome offer: wait until it's been seen
+        // (welcome_seen) before showing. Fallback reveal after 15s.
+        const start = Date.now();
+        const reveal = () => {
+            if (hasCookie('welcome_seen') || Date.now() - start > 15000) {
+                this.show = true;
+            } else {
+                setTimeout(reveal, 600);
+            }
+        };
+        reveal();
     },
     accept() {
         setCookie('cookie_consent', 'accepted');

@@ -58,7 +58,7 @@
 
         <div class="mt-14 flex flex-col gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-xs text-white/40">&copy; {{ now()->year }} {{ config('app.name') }}. All rights reserved.</p>
-            <ul class="flex gap-5 text-xs uppercase tracking-[0.15em] text-white/60">
+            <ul class="flex flex-wrap gap-x-5 gap-y-2 text-xs uppercase tracking-[0.15em] text-white/60">
                 @foreach ($social as $item)
                     <li><a href="{{ $item['url'] }}" class="hover:text-accent">{{ $item['label'] }}</a></li>
                 @endforeach

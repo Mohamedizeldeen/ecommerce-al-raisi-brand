@@ -5,7 +5,7 @@
     x-transition:leave="transition duration-200 ease-in"
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
-    class="fixed bottom-5 left-5 z-[95] w-[calc(100vw-2.5rem)] max-w-sm rounded-2xl border border-stone-soft bg-white p-5 shadow-2xl sm:bottom-6 sm:left-6">
+    class="fixed bottom-24 left-4 right-4 z-[95] rounded-2xl border border-stone-soft bg-white p-5 shadow-2xl sm:bottom-6 sm:left-6 sm:right-auto sm:max-w-sm">
     <p class="font-serif text-lg text-ink">We value your privacy</p>
     <p class="mt-2 text-sm leading-relaxed text-stone-600">
         We use cookies to enhance your experience and understand what you love, so we can serve you better.

@@ -13,15 +13,15 @@
 <header x-data="{ open: false, scrolled: false }" @scroll.window="scrolled = window.scrollY > 24"
     class="sticky top-0 z-50 transition-all duration-500"
     :class="scrolled ? 'bg-white/85 shadow-[0_1px_0_rgba(22,19,15,0.08)] backdrop-blur-md' : 'bg-white'">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6">
-        <div class="flex h-20 items-center justify-between gap-4">
+    <div class="mx-auto max-w-7xl px-3 sm:px-6">
+        <div class="flex h-20 items-center justify-between gap-3 sm:gap-4">
             <button @click="open = ! open" class="-ml-2 p-2 text-ink xl:hidden" aria-label="Toggle menu">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
                 </svg>
             </button>
 
-            <a href="/" class="font-serif text-2xl uppercase tracking-[0.15em] text-ink sm:text-3xl">
+            <a href="/" class="whitespace-nowrap font-serif text-xl uppercase tracking-[0.05em] text-ink sm:text-3xl sm:tracking-[0.15em]">
                 {{ config('app.name') }}
             </a>
 
@@ -31,8 +31,10 @@
                 @endforeach
             </nav>
 
-            <div class="flex items-center gap-4 text-ink sm:gap-5">
-                <x-storefront.region-switcher />
+            <div class="flex items-center gap-3 text-ink sm:gap-5">
+                <div class="hidden sm:block">
+                    <x-storefront.region-switcher />
+                </div>
                 <a href="/search" aria-label="{{ __('Search') }}" class="transition hover:text-accent">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -60,5 +62,28 @@
                 <a href="{{ $item['url'] }}" class="py-2 hover:text-accent">{{ __($item['label']) }}</a>
             @endforeach
         </nav>
+
+        {{-- Language + currency (phones only — header switcher is hidden below sm) --}}
+        <div class="flex flex-wrap items-center gap-2 border-t border-stone-soft px-4 py-3 sm:hidden">
+            @foreach (config('regions.locales') as $code => $loc)
+                <form method="POST" action="{{ route('preferences.update') }}">
+                    @csrf
+                    <input type="hidden" name="locale" value="{{ $code }}">
+                    <button type="submit"
+                        class="border px-3 py-1.5 text-xs {{ app()->getLocale() === $code ? 'border-ink bg-ink text-white' : 'border-stone-soft text-ink/70' }}">
+                        {{ $loc['native'] }}
+                    </button>
+                </form>
+            @endforeach
+            <form method="POST" action="{{ route('preferences.update') }}" class="ms-auto">
+                @csrf
+                <select name="currency" onchange="this.form.submit()"
+                    class="border border-stone-soft bg-sand/40 px-2 py-1.5 text-xs text-ink focus:border-accent focus:outline-none">
+                    @foreach (config('regions.currencies') as $code => $cur)
+                        <option value="{{ $code }}" @selected(\App\Support\Money::currentCurrency() === $code)>{{ $code }}</option>
+                    @endforeach
+                </select>
+            </form>
+        </div>
     </div>
 </header>

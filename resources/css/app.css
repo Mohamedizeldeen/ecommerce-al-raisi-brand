@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views';
+
+@theme {
+    --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-serif: 'Cormorant Garamond', ui-serif, Georgia, 'Times New Roman', serif;
+
+    --color-ink: #16130f;
+    --color-sand: #f6f2ec;
+    --color-stone-soft: #e7ded0;
+    --color-accent: #8a6d4b;
+}
+
+@layer base {
+    body {
+        @apply bg-white text-ink font-sans antialiased;
+    }
+
+    h1, h2, h3, h4 {
+        @apply font-serif;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}

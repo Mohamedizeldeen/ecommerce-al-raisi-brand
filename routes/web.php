@@ -29,6 +29,7 @@ Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 Route::controller(CartController::class)->group(function () {
     Route::get('/cart', 'index')->name('cart.index');
+    Route::get('/cart/drawer', 'drawer')->name('cart.drawer');
     Route::post('/cart/add', 'add')->name('cart.add');
     Route::patch('/cart/items/{item}', 'update')->name('cart.update');
     Route::delete('/cart/items/{item}', 'remove')->name('cart.remove');

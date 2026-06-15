@@ -1,6 +1,7 @@
 @props(['title' => null, 'description' => null])
+@php($cartCount = app(\App\Services\CartService::class)->count())
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,18 +10,15 @@
     @if ($description)
         <meta name="description" content="{{ $description }}">
     @endif
+    <script>
+        document.documentElement.classList.add('js');
+        window.__cartCount = {{ $cartCount }};
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen flex flex-col bg-white">
+<body class="flex min-h-screen flex-col bg-white">
+    <x-storefront.announcement />
     <x-storefront.header />
-
-    @if (session('success') || session('error'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-            class="{{ session('error') ? 'bg-red-600' : 'bg-ink' }} px-4 py-3 text-center text-sm text-white">
-            <span>{{ session('success') ?? session('error') }}</span>
-            <button @click="show = false" class="ml-3 text-xs underline">Dismiss</button>
-        </div>
-    @endif
 
     <main class="flex-1">
         {{ $slot }}
@@ -28,7 +26,19 @@
 
     <x-storefront.footer />
 
+    <x-storefront.toasts />
+    <x-storefront.cart-drawer />
     <x-storefront.age-gate />
+
+    @if (session('success') || session('error'))
+        @push('scripts')
+            <script>
+                document.addEventListener('alpine:init', () => {
+                    Alpine.store('toast').push(@js(session('success') ?? session('error')), '{{ session('error') ? 'error' : 'success' }}');
+                });
+            </script>
+        @endpush
+    @endif
 
     @stack('scripts')
 </body>

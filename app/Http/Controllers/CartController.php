@@ -23,6 +23,22 @@ class CartController extends Controller
         ]);
     }
 
+    /**
+     * Render the slide-out mini-cart contents (AJAX, JSON-wrapped HTML).
+     */
+    public function drawer()
+    {
+        $cart = $this->cart->current();
+        $cart->load(['items.variant.product.media']);
+
+        $html = view('partials.cart-drawer', [
+            'items' => $cart->items,
+            'summary' => $this->cart->summary(),
+        ])->render();
+
+        return response()->json(['html' => $html, 'count' => $this->cart->count()]);
+    }
+
     public function add(Request $request)
     {
         $data = $request->validate([
@@ -33,10 +49,20 @@ class CartController extends Controller
         $variant = ProductVariant::findOrFail($data['variant_id']);
 
         if (! $variant->is_active || $variant->stock_qty < 1) {
-            return back()->with('error', 'Sorry, that item is currently out of stock.');
+            return $request->expectsJson()
+                ? response()->json(['ok' => false, 'message' => 'Sorry, that item is out of stock.'], 422)
+                : back()->with('error', 'Sorry, that item is currently out of stock.');
         }
 
         $this->cart->add($variant, $data['quantity'] ?? 1);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'count' => $this->cart->count(),
+                'message' => 'Added to your bag.',
+            ]);
+        }
 
         return redirect()->route('cart.index')->with('success', 'Added to your bag.');
     }

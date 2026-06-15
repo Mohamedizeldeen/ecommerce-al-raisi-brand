@@ -18,7 +18,7 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12" x-data="productPage(@js($variantData))">
         <div class="grid gap-10 lg:grid-cols-2">
             {{-- Gallery --}}
-            <div class="space-y-4" x-data="{ active: 0 }">
+            <div class="space-y-4 lg:sticky lg:top-28 lg:self-start" x-data="{ active: 0 }">
                 <div class="aspect-[4/5] overflow-hidden bg-sand">
                     @if (count($gallery))
                         @foreach ($gallery as $i => $img)
@@ -105,9 +105,11 @@
                     </p>
 
                     <button type="submit"
+                        @click.prevent="$store.cart.add(current?.id, 1)"
                         class="w-full bg-ink py-4 text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
-                        :disabled="! current || current.stock < 1">
-                        Add to Cart
+                        :disabled="! current || current.stock < 1 || $store.cart.loading">
+                        <span x-show="! $store.cart.loading">Add to Cart</span>
+                        <span x-show="$store.cart.loading" x-cloak>Adding…</span>
                     </button>
                 </form>
 

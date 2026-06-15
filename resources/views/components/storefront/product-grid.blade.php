@@ -20,7 +20,9 @@
     @if ($products->count())
         <div class="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
             @foreach ($products as $product)
-                <x-storefront.product-card :product="$product" />
+                <div x-data class="reveal" x-intersect.once="$el.classList.add('is-visible')" style="transition-delay: {{ ($loop->index % 4) * 90 }}ms">
+                    <x-storefront.product-card :product="$product" />
+                </div>
             @endforeach
         </div>
 

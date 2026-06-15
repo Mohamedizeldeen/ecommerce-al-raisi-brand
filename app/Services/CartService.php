@@ -61,7 +61,10 @@ class CartService
 
     public function count(): int
     {
-        $cart = $this->existing();
+        // Prefer the cart already resolved this request (e.g. just created during
+        // an add) — the guest cookie is only queued on the response, so existing()
+        // would miss a brand-new cart on the very first add.
+        $cart = $this->resolved ?? $this->existing();
 
         return $cart ? (int) $cart->items()->sum('quantity') : 0;
     }

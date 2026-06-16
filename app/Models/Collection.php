@@ -7,10 +7,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
+use Spatie\Translatable\HasTranslations;
 
 class Collection extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
+
+    /** @var list<string> */
+    public array $translatable = ['name', 'description'];
 
     protected $guarded = ['id'];
 
@@ -39,7 +44,7 @@ class Collection extends Model
     public function coverImageUrl(int $offset = 0): string
     {
         if ($this->cover_image) {
-            return \Illuminate\Support\Str::startsWith($this->cover_image, ['http://', 'https://'])
+            return Str::startsWith($this->cover_image, ['http://', 'https://'])
                 ? $this->cover_image
                 : asset('storage/'.$this->cover_image);
         }

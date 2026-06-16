@@ -16,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -40,22 +41,37 @@ class CouponResource extends Resource
                 Select::make('type')
                     ->options(CouponType::class)
                     ->default('percent')
+                    ->live()
                     ->required(),
                 TextInput::make('value')
                     ->required()
-                    ->numeric(),
-                TextInput::make('min_total_baisa')
-                    ->required()
                     ->numeric()
-                    ->default(0),
+                    ->live()
+                    ->label(fn (Get $get) => $get('type') === CouponType::Fixed->value ? 'Amount (OMR)' : 'Percentage (%)')
+                    ->prefix(fn (Get $get) => $get('type') === CouponType::Fixed->value ? 'OMR' : null)
+                    ->suffix(fn (Get $get) => $get('type') === CouponType::Percent->value ? '%' : null)
+                    ->maxValue(fn (Get $get) => $get('type') === CouponType::Percent->value ? 100 : null)
+                    // Fixed coupons store integer baisa (OMR × 1000); percent stores 0–100.
+                    ->formatStateUsing(fn ($state, Get $get) => $get('type') === CouponType::Fixed->value && $state !== null ? $state / 1000 : $state)
+                    ->dehydrateStateUsing(fn ($state, Get $get) => $get('type') === CouponType::Fixed->value ? (int) round(((float) $state) * 1000) : (int) $state),
+                TextInput::make('min_total_baisa')
+                    ->label('Minimum order (OMR)')
+                    ->prefix('OMR')
+                    ->numeric()
+                    ->default(0)
+                    ->formatStateUsing(fn (?int $state) => $state !== null ? $state / 1000 : 0)
+                    ->dehydrateStateUsing(fn ($state) => (int) round(((float) $state) * 1000)),
                 DateTimePicker::make('starts_at'),
                 DateTimePicker::make('ends_at'),
                 TextInput::make('usage_limit')
-                    ->numeric(),
-                TextInput::make('used_count')
-                    ->required()
                     ->numeric()
-                    ->default(0),
+                    ->helperText('Leave blank for unlimited.'),
+                TextInput::make('used_count')
+                    ->numeric()
+                    ->default(0)
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->helperText('Managed automatically when orders are paid.'),
                 Toggle::make('is_active')
                     ->required(),
             ]);

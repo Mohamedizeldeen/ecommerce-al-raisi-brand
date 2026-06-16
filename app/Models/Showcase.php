@@ -5,9 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Spatie\Translatable\HasTranslations;
 
 class Showcase extends Model
 {
+    use HasTranslations;
+
+    /** @var list<string> */
+    public array $translatable = ['title', 'subtitle', 'description'];
+
     protected $guarded = ['id'];
 
     protected $casts = [

@@ -20,8 +20,8 @@ it('registers a new customer and signs them in', function () {
     post('/register', [
         'name' => 'Jane Buyer',
         'email' => 'jane@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'Password123',
+        'password_confirmation' => 'Password123',
     ])->assertRedirect(route('account.dashboard'));
 
     $this->assertAuthenticated();

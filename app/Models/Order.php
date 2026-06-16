@@ -56,6 +56,10 @@ class Order extends Model
 
     public static function generateNumber(): string
     {
-        return 'AMAL-'.now()->format('Ymd').'-'.strtoupper(Str::random(5));
+        do {
+            $number = 'AMAL-'.now()->format('Ymd').'-'.strtoupper(Str::random(8));
+        } while (static::where('order_number', $number)->exists());
+
+        return $number;
     }
 }

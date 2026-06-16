@@ -50,7 +50,7 @@ class Coupon extends Model
         }
 
         return $this->type === CouponType::Percent
-            ? (int) floor($subtotalBaisa * $this->value / 100)
+            ? min((int) floor($subtotalBaisa * min((int) $this->value, 100) / 100), $subtotalBaisa)
             : min((int) $this->value, $subtotalBaisa);
     }
 }

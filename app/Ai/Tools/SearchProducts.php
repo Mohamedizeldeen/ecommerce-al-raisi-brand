@@ -44,19 +44,24 @@ class SearchProducts implements Tool
             return json_encode(['results' => [], 'note' => 'Empty search query.']);
         }
 
-        $products = Product::published()
+        $like = '%'.addcslashes($term, '%_\\').'%';
+
+        $query = Product::published()
             ->with(['variants', 'categories:id,name', 'collections:id,name', 'media'])
-            ->where(function ($q) use ($term) {
-                $q->where('name', 'like', "%{$term}%")
-                    ->orWhere('description', 'like', "%{$term}%")
-                    ->orWhere('fabric', 'like', "%{$term}%")
-                    ->orWhereHas('categories', fn ($c) => $c->where('name', 'like', "%{$term}%"))
-                    ->orWhereHas('collections', fn ($c) => $c->where('name', 'like', "%{$term}%"));
-            })
-            ->limit(12)
-            ->get()
-            ->when($inStockOnly, fn ($items) => $items->filter->in_stock)
-            ->take(8);
+            ->where(function ($q) use ($like) {
+                $q->where('name', 'like', $like)
+                    ->orWhere('description', 'like', $like)
+                    ->orWhere('fabric', 'like', $like)
+                    ->orWhereHas('categories', fn ($c) => $c->where('name', 'like', $like))
+                    ->orWhereHas('collections', fn ($c) => $c->where('name', 'like', $like));
+            });
+
+        // Filter in-stock in SQL (before LIMIT) so an empty result truly means "none".
+        if ($inStockOnly) {
+            $query->whereHas('variants', fn ($v) => $v->where('is_active', true)->where('stock_qty', '>', 0));
+        }
+
+        $products = $query->orderByDesc('is_featured')->orderBy('sort_order')->limit(8)->get();
 
         if ($products->isEmpty()) {
             return json_encode([

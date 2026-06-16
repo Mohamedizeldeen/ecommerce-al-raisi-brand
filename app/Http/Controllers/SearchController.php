@@ -17,14 +17,18 @@ class SearchController extends Controller
         $query = Product::published()->with(['media', 'variants']);
 
         if ($term !== '') {
-            $query->where(function ($q) use ($term) {
-                $q->where('name', 'like', "%{$term}%")
-                    ->orWhere('description', 'like', "%{$term}%")
-                    ->orWhere('fabric', 'like', "%{$term}%");
+            // Escape LIKE wildcards so user input is treated literally.
+            $escaped = addcslashes($term, '%_\\');
+
+            $query->where(function ($q) use ($escaped) {
+                $q->where('name', 'like', "%{$escaped}%")
+                    ->orWhere('description', 'like', "%{$escaped}%")
+                    ->orWhere('fabric', 'like', "%{$escaped}%");
             });
         }
 
         $products = $this->applyProductSort($query, $request)
+            ->orderBy('id')
             ->paginate(12)
             ->withQueryString();
 

@@ -25,6 +25,6 @@ class PreferenceController extends Controller
             session(['currency' => $data['currency']]);
         }
 
-        return back();
+        return back(fallback: route('home'));
     }
 }

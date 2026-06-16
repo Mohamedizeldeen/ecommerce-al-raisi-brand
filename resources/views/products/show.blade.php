@@ -60,7 +60,7 @@
                 {{-- Colours --}}
                 @if ($colors->isNotEmpty())
                     <div class="mt-8">
-                        <p class="text-xs uppercase tracking-[0.18em] text-ink">Colour:
+                        <p class="text-xs uppercase tracking-[0.18em] text-ink">{{ __('Colour:') }}
                             <span class="text-stone-500" x-text="color || 'Select'"></span></p>
                         <div class="mt-3 flex flex-wrap gap-3">
                             @foreach ($colors as $c)
@@ -78,8 +78,8 @@
                 @if ($sizes->isNotEmpty())
                     <div class="mt-6">
                         <div class="flex items-center justify-between">
-                            <p class="text-xs uppercase tracking-[0.18em] text-ink">Size</p>
-                            <a href="/size-guide" class="text-xs text-accent hover:underline">Size guide</a>
+                            <p class="text-xs uppercase tracking-[0.18em] text-ink">{{ __('Size') }}</p>
+                            <a href="/size-guide" class="text-xs text-accent hover:underline">{{ __('Size guide') }}</a>
                         </div>
                         <div class="mt-3 flex flex-wrap gap-2">
                             @foreach ($sizes as $s)
@@ -99,18 +99,18 @@
                     <input type="hidden" name="quantity" value="1">
 
                     <p class="mb-3 text-sm" x-cloak>
-                        <span x-show="current && current.stock > 3" class="text-green-700">In stock</span>
-                        <span x-show="current && current.stock > 0 && current.stock <= 3" class="text-accent">Low stock — only <span x-text="current?.stock"></span> left</span>
-                        <span x-show="current && current.stock < 1" class="text-red-600">Sold out</span>
-                        <span x-show="! current" class="text-stone-400">Please select your options</span>
+                        <span x-show="current && current.stock > 3" class="text-green-700">{{ __('In stock') }}</span>
+                        <span x-show="current && current.stock > 0 && current.stock <= 3" class="text-accent">{{ __('Low stock — only') }} <span x-text="current?.stock"></span> {{ __('left') }}</span>
+                        <span x-show="current && current.stock < 1" class="text-red-600">{{ __('Sold out') }}</span>
+                        <span x-show="! current" class="text-stone-400">{{ __('Please select your options') }}</span>
                     </p>
 
                     <button type="submit"
                         @click.prevent="$store.cart.add(current?.id, 1)"
                         class="w-full bg-ink py-4 text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
                         :disabled="! current || current.stock < 1 || $store.cart.loading">
-                        <span x-show="! $store.cart.loading">Add to Cart</span>
-                        <span x-show="$store.cart.loading" x-cloak>Adding…</span>
+                        <span x-show="! $store.cart.loading">{{ __('Add to Cart') }}</span>
+                        <span x-show="$store.cart.loading" x-cloak>{{ __('Adding…') }}</span>
                     </button>
                 </form>
 
@@ -118,7 +118,7 @@
                 @if ($product->fabric || ! empty($product->specs))
                     <div class="mt-10 border-t border-stone-soft pt-6 text-sm text-stone-600">
                         @if ($product->fabric)
-                            <p><span class="uppercase tracking-[0.15em] text-ink">Fabric:</span> {{ $product->fabric }}</p>
+                            <p><span class="uppercase tracking-[0.15em] text-ink">{{ __('Fabric:') }}</span> {{ $product->fabric }}</p>
                         @endif
                         @foreach (($product->specs ?? []) as $key => $value)
                             <p class="mt-1"><span class="uppercase tracking-[0.15em] text-ink">{{ $key }}:</span> {{ $value }}</p>
@@ -131,8 +131,8 @@
         {{-- #11 Style it with — complete the look --}}
         @if ($product->pairings->isNotEmpty())
             <section class="mt-24">
-                <h2 class="mb-3 text-center text-3xl text-ink">Style it with</h2>
-                <p class="mb-12 text-center text-sm text-stone-500">Complete the look with these matching pieces.</p>
+                <h2 class="mb-3 text-center text-3xl text-ink">{{ __('Style it with') }}</h2>
+                <p class="mb-12 text-center text-sm text-stone-500">{{ __('Complete the look with these matching pieces.') }}</p>
                 <div class="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-4">
                     @foreach ($product->pairings as $pair)
                         <x-storefront.product-card :product="$pair" />
@@ -143,7 +143,7 @@
 
         @if ($related->isNotEmpty())
             <section class="mt-24">
-                <h2 class="mb-12 text-center text-3xl text-ink">You may also like</h2>
+                <h2 class="mb-12 text-center text-3xl text-ink">{{ __('You may also like') }}</h2>
                 <div class="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-4">
                     @foreach ($related as $rel)
                         <x-storefront.product-card :product="$rel" />

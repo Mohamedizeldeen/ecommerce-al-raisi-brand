@@ -10,7 +10,7 @@
             class="pointer-events-auto flex items-center gap-4 border-l-2 bg-ink px-5 py-3 text-sm text-white shadow-xl"
             :class="toast.type === 'error' ? 'border-red-400' : 'border-accent'">
             <span x-text="toast.message"></span>
-            <button @click="$store.toast.remove(toast.id)" class="text-white/50 transition hover:text-white" aria-label="Dismiss">&times;</button>
+            <button @click="$store.toast.remove(toast.id)" class="text-white/50 transition hover:text-white" aria-label="{{ __('Dismiss') }}">&times;</button>
         </div>
     </template>
 </div>

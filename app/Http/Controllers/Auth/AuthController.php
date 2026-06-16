@@ -28,7 +28,7 @@ class AuthController extends Controller
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
                 ->withInput($request->only('email'))
-                ->withErrors(['email' => 'These credentials do not match our records.']);
+                ->withErrors(['email' => __('These credentials do not match our records.')]);
         }
 
         $request->session()->regenerate();
@@ -48,7 +48,7 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ]);
 
         $user = User::create($data);
@@ -58,7 +58,7 @@ class AuthController extends Controller
         $this->cart->mergeGuestIntoUser($user);
 
         return redirect()->route('account.dashboard')
-            ->with('success', 'Welcome to '.config('app.name').'.');
+            ->with('success', __('Welcome to :name.', ['name' => config('app.name')]));
     }
 
     public function logout(Request $request)

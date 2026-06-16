@@ -18,10 +18,15 @@ class ProductController extends Controller
             'pairings' => fn ($q) => $q->where('products.is_active', true)->with(['media', 'variants']),
         ]);
 
+        // Avoid each variant lazy-loading its parent product (e.g. for in_stock checks).
+        $product->variants->each->setRelation('product', $product);
+
         $related = Product::published()
             ->with(['media', 'variants'])
             ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $product->categories->pluck('id')))
             ->where('id', '!=', $product->id)
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
             ->take(4)
             ->get();
 

@@ -1,11 +1,11 @@
-<x-layouts.storefront title="Shopping Bag">
+<x-layouts.storefront title="{{ __('Shopping Bag') }}">
     <section class="mx-auto max-w-5xl px-4 sm:px-6 py-12">
-        <h1 class="mb-8 text-4xl text-ink">Shopping Bag</h1>
+        <h1 class="mb-8 text-4xl text-ink">{{ __('Shopping Bag') }}</h1>
 
         @if ($items->isEmpty())
             <div class="py-16 text-center">
-                <p class="text-stone-500">Your bag is empty.</p>
-                <a href="{{ route('collections.index') }}" class="mt-4 inline-block text-xs uppercase tracking-[0.2em] text-accent hover:underline">Continue shopping</a>
+                <p class="text-stone-500">{{ __('Your bag is empty.') }}</p>
+                <a href="{{ route('collections.index') }}" class="mt-4 inline-block text-xs uppercase tracking-[0.2em] text-accent hover:underline">{{ __('Continue shopping') }}</a>
             </div>
         @else
             <div class="grid gap-10 lg:grid-cols-3">
@@ -28,11 +28,11 @@
                                         @csrf @method('PATCH')
                                         <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" max="{{ $item->variant->stock_qty }}"
                                             class="w-16 border border-stone-soft px-2 py-1 text-sm focus:border-accent focus:outline-none">
-                                        <button type="submit" class="text-xs uppercase tracking-[0.12em] text-accent hover:underline">Update</button>
+                                        <button type="submit" class="text-xs uppercase tracking-[0.12em] text-accent hover:underline">{{ __('Update') }}</button>
                                     </form>
                                     <form method="POST" action="{{ route('cart.remove', $item) }}">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs uppercase tracking-[0.12em] text-stone-400 hover:text-red-600">Remove</button>
+                                        <button type="submit" class="text-xs uppercase tracking-[0.12em] text-stone-400 hover:text-red-600">{{ __('Remove') }}</button>
                                     </form>
                                 </div>
                             </div>
@@ -42,27 +42,27 @@
 
                 <div class="lg:col-span-1">
                     <div class="bg-sand p-6">
-                        <h2 class="mb-4 text-lg text-ink">Order Summary</h2>
+                        <h2 class="mb-4 text-lg text-ink">{{ __('Order Summary') }}</h2>
 
                         <form method="POST" action="{{ route('cart.coupon') }}" class="mb-5 flex gap-2">
                             @csrf
-                            <input type="text" name="code" value="{{ $cart->coupon_code }}" placeholder="Promo code"
+                            <input type="text" name="code" value="{{ $cart->coupon_code }}" placeholder="{{ __('Promo code') }}"
                                 class="w-full border border-stone-soft bg-white px-3 py-2 text-sm focus:border-accent focus:outline-none">
-                            <button type="submit" class="border border-ink px-3 text-xs uppercase tracking-[0.12em] hover:bg-ink hover:text-white transition">Apply</button>
+                            <button type="submit" class="border border-ink px-3 text-xs uppercase tracking-[0.12em] hover:bg-ink hover:text-white transition">{{ __('Apply') }}</button>
                         </form>
 
                         <dl class="space-y-2 text-sm">
-                            <div class="flex justify-between"><dt class="text-stone-500">Subtotal</dt><dd>{{ format_omr($summary['subtotal']) }}</dd></div>
+                            <div class="flex justify-between"><dt class="text-stone-500">{{ __('Subtotal') }}</dt><dd>{{ format_omr($summary['subtotal']) }}</dd></div>
                             @if ($summary['discount'] > 0)
-                                <div class="flex justify-between text-accent"><dt>Discount</dt><dd>-{{ format_omr($summary['discount']) }}</dd></div>
+                                <div class="flex justify-between text-accent"><dt>{{ __('Discount') }}</dt><dd>-{{ format_omr($summary['discount']) }}</dd></div>
                             @endif
-                            <div class="flex justify-between"><dt class="text-stone-500">Shipping</dt><dd>{{ $summary['shipping'] > 0 ? format_omr($summary['shipping']) : 'Free' }}</dd></div>
-                            <div class="flex justify-between border-t border-stone-soft pt-3 text-base text-ink"><dt>Total</dt><dd>{{ format_omr($summary['total']) }}</dd></div>
+                            <div class="flex justify-between"><dt class="text-stone-500">{{ __('Shipping') }}</dt><dd>{{ $summary['shipping'] > 0 ? format_omr($summary['shipping']) : __('Free') }}</dd></div>
+                            <div class="flex justify-between border-t border-stone-soft pt-3 text-base text-ink"><dt>{{ __('Total') }}</dt><dd>{{ format_omr($summary['total']) }}</dd></div>
                         </dl>
 
                         <a href="{{ route('checkout.index') }}"
                             class="mt-6 block bg-ink py-3.5 text-center text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent">
-                            Proceed to Checkout
+                            {{ __('Proceed to Checkout') }}
                         </a>
                     </div>
                 </div>

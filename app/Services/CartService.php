@@ -8,8 +8,11 @@ use App\Models\Coupon;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
 class CartService
@@ -36,13 +39,44 @@ class CartService
         $token = request()->cookie(self::COOKIE);
 
         if ($token && $cart = Cart::whereNull('user_id')->where('token', $token)->first()) {
+            $cart->update(['expires_at' => $this->guestExpiry()]);
+
             return $this->resolved = $cart;
         }
 
         $token = (string) Str::uuid();
         Cookie::queue(self::COOKIE, $token, 60 * 24 * self::DAYS);
 
-        return $this->resolved = Cart::create(['token' => $token]);
+        return $this->resolved = Cart::create([
+            'token' => $token,
+            'expires_at' => $this->guestExpiry(),
+        ]);
+    }
+
+    private function guestExpiry(): Carbon
+    {
+        return now()->addDays(self::DAYS);
+    }
+
+    /**
+     * Delete expired guest carts (and their items). Returns the number of carts removed.
+     */
+    public function pruneExpired(): int
+    {
+        $expired = Cart::whereNull('user_id')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', now())
+            ->get();
+
+        $count = 0;
+
+        foreach ($expired as $cart) {
+            $cart->items()->delete();
+            $cart->delete();
+            $count++;
+        }
+
+        return $count;
     }
 
     /**
@@ -74,10 +108,17 @@ class CartService
         $cart = $this->current();
         $qty = max(1, $qty);
 
-        $item = $cart->items()->firstOrNew(['product_variant_id' => $variant->id]);
-        $desired = ($item->exists ? $item->quantity : 0) + $qty;
-        $item->quantity = min($desired, max(1, $variant->stock_qty));
-        $item->save();
+        DB::transaction(function () use ($cart, $variant, $qty) {
+            $item = $cart->items()
+                ->where('product_variant_id', $variant->id)
+                ->lockForUpdate()
+                ->first()
+                ?? $cart->items()->make(['product_variant_id' => $variant->id]);
+
+            $desired = ($item->exists ? $item->quantity : 0) + $qty;
+            $item->quantity = $this->clampToStock($desired, $variant);
+            $item->save();
+        });
     }
 
     public function updateItem(CartItem $item, int $qty): void
@@ -90,8 +131,19 @@ class CartService
             return;
         }
 
-        $item->quantity = min($qty, max(1, $item->variant->stock_qty));
-        $item->save();
+        DB::transaction(function () use ($item, $qty) {
+            $locked = CartItem::whereKey($item->getKey())->lockForUpdate()->first() ?? $item;
+            $locked->quantity = $this->clampToStock($qty, $locked->variant);
+            $locked->save();
+        });
+    }
+
+    /**
+     * Clamp a requested quantity to the variant's available stock (minimum 1).
+     */
+    private function clampToStock(int $qty, ProductVariant $variant): int
+    {
+        return min(max(1, $qty), max(1, $variant->stock_qty));
     }
 
     public function removeItem(CartItem $item): void
@@ -103,9 +155,10 @@ class CartService
     public function applyCoupon(string $code): bool
     {
         $cart = $this->current();
+        $cart->loadMissing('items.variant.product');
         $coupon = Coupon::where('code', $code)->first();
 
-        if (! $coupon || ! $coupon->isValidFor($cart->subtotalBaisa())) {
+        if (! $coupon || ! $coupon->isValidFor($this->purchasableSubtotalBaisa($cart))) {
             return false;
         }
 
@@ -127,7 +180,7 @@ class CartService
         $cart = $this->current();
         $cart->loadMissing('items.variant.product');
 
-        $subtotal = $cart->subtotalBaisa();
+        $subtotal = $this->purchasableSubtotalBaisa($cart);
         $discount = $this->discountBaisa($cart, $subtotal);
         $payable = max(0, $subtotal - $discount);
         $shipping = $this->shippingBaisa($payable);
@@ -193,6 +246,17 @@ class CartService
         $this->resolved = null;
     }
 
+    /**
+     * Subtotal of only purchasable items: variant active and in stock. Inactive
+     * or out-of-stock items remain in the cart but do not count toward totals.
+     */
+    private function purchasableSubtotalBaisa(Cart $cart): int
+    {
+        return (int) $cart->items
+            ->filter(fn (CartItem $item) => $item->variant && $item->variant->in_stock)
+            ->sum(fn (CartItem $item) => $item->lineTotalBaisa());
+    }
+
     private function discountBaisa(Cart $cart, int $subtotal): int
     {
         if (! $cart->coupon_code) {
@@ -201,7 +265,17 @@ class CartService
 
         $coupon = Coupon::where('code', $cart->coupon_code)->first();
 
-        return $coupon ? $coupon->discountFor($subtotal) : 0;
+        // The stored code may have become stale (expired, deactivated, usage cap
+        // reached, or the subtotal dropped below the minimum). Drop it and tell
+        // the customer rather than silently keeping an inapplicable discount.
+        if (! $coupon || ! $coupon->isValidFor($subtotal)) {
+            $cart->update(['coupon_code' => null]);
+            Session::flash('error', 'Your promo code is no longer valid and has been removed.');
+
+            return 0;
+        }
+
+        return $coupon->discountFor($subtotal);
     }
 
     private function shippingBaisa(int $payable): int

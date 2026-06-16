@@ -36,11 +36,18 @@ class CategoryResource extends Resource
             ->components([
                 TextInput::make('name')
                     ->required(),
+                TextInput::make('name_ar')
+                    ->label('Name (العربية)')
+                    ->extraInputAttributes(['dir' => 'rtl']),
                 TextInput::make('slug')
                     ->required(),
                 Select::make('parent_id')
                     ->relationship('parent', 'name'),
                 Textarea::make('description')
+                    ->columnSpanFull(),
+                Textarea::make('description_ar')
+                    ->label('Description (العربية)')
+                    ->extraInputAttributes(['dir' => 'rtl'])
                     ->columnSpanFull(),
                 TextInput::make('sort_order')
                     ->required()

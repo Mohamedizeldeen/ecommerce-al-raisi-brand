@@ -14,9 +14,9 @@
 
         <header class="flex items-center justify-between border-b border-stone-soft px-6 py-5">
             <h2 class="text-xs uppercase tracking-[0.25em] text-ink">
-                Your Bag <span class="text-stone-400" x-text="'(' + $store.cart.count + ')'"></span>
+                {{ __('Your Bag') }} <span class="text-stone-400" x-text="'(' + $store.cart.count + ')'"></span>
             </h2>
-            <button @click="$store.cart.close()" aria-label="Close" class="text-ink transition hover:text-accent">
+            <button @click="$store.cart.close()" aria-label="{{ __('Close') }}" class="text-ink transition hover:text-accent">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
@@ -25,7 +25,7 @@
 
         <div class="relative min-h-0 flex-1">
             <div x-show="$store.cart.loading" class="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
-                <span class="text-[11px] uppercase tracking-[0.25em] text-stone-400">Loading…</span>
+                <span class="text-[11px] uppercase tracking-[0.25em] text-stone-400">{{ __('Loading…') }}</span>
             </div>
             <div class="h-full" x-html="$store.cart.html"></div>
         </div>

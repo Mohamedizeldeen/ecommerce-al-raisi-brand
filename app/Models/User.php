@@ -26,7 +26,8 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'phone',
-        'is_admin',
+        // 'is_admin' is intentionally NOT fillable — it gates the admin panel and
+        // must only be set deliberately (e.g. via forceFill in a seeder/command).
     ];
 
     /**

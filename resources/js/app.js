@@ -80,10 +80,18 @@ Alpine.store('cart', {
     html: '',
 
     async refresh() {
-        const res = await fetch('/cart/drawer', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-        const data = await res.json();
-        this.html = data.html;
-        this.count = data.count;
+        try {
+            const res = await fetch('/cart/drawer', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (! res.ok) throw new Error('Request failed');
+            const data = await res.json();
+            this.html = data.html;
+            this.count = data.count;
+        } catch (e) {
+            // Keep the previously loaded html so the drawer isn't stuck blank.
+            Alpine.store('toast').push('Could not load your bag. Please try again.', 'error');
+        } finally {
+            this.loading = false;
+        }
     },
 
     async openDrawer() {
@@ -165,11 +173,20 @@ Alpine.data('chatAssistant', () => ({
         this.send();
     },
 
-    // Render an assistant message: escape, then linkify URLs, **bold** and line breaks.
+    // Render an assistant message safely: escape first, then apply light markdown
+    // (links, bold, bullets) and wrap long URLs so nothing overflows the bubble.
     render(content) {
+        const link = (href, text) =>
+            `<a href="${href}" class="underline underline-offset-2 hover:text-accent" target="_blank" rel="noopener nofollow">${text}</a>`;
         return escapeHtml(content)
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" class="underline hover:text-accent" target="_blank" rel="noopener">$1</a>')
+            // [label](url) markdown links — show the label, not the raw URL
+            .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, t, u) => link(u, t))
+            // **bold**
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            // leading "* " / "- " bullets
+            .replace(/^\s*[*-]\s+/gm, '• ')
+            // bare URLs not already inside an href (preceded by a non-quote char)
+            .replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g, (_, p, u) => p + link(u, u))
             .replace(/\n/g, '<br>');
     },
 

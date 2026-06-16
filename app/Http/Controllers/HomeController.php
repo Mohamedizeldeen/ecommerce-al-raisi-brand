@@ -18,13 +18,15 @@ class HomeController extends Controller
         $featuredProducts = Product::published()
             ->featured()
             ->with(['media', 'variants'])
-            ->latest('published_at')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
             ->take(8)
             ->get();
 
         $newArrivals = Product::published()
             ->with(['media', 'variants'])
-            ->latest('published_at')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
             ->take(8)
             ->get();
 

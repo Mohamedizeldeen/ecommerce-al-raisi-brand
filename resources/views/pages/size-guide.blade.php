@@ -1,16 +1,16 @@
-<x-layouts.storefront title="Size Guide">
+<x-layouts.storefront title="{{ __('Size Guide') }}">
     <section class="mx-auto max-w-3xl px-4 sm:px-6 py-16">
-        <h1 class="text-center text-4xl text-ink">Size Guide</h1>
-        <p class="mt-3 text-center text-stone-500">All measurements are in centimetres.</p>
+        <h1 class="text-center text-4xl text-ink">{{ __('Size Guide') }}</h1>
+        <p class="mt-3 text-center text-stone-500">{{ __('All measurements are in centimetres.') }}</p>
 
         <div class="mt-10 overflow-x-auto">
             <table class="w-full border border-stone-soft text-sm">
                 <thead class="bg-sand text-left uppercase tracking-[0.12em] text-ink">
                     <tr>
-                        <th class="px-4 py-3">Size</th>
-                        <th class="px-4 py-3">Bust</th>
-                        <th class="px-4 py-3">Waist</th>
-                        <th class="px-4 py-3">Hips</th>
+                        <th class="px-4 py-3">{{ __('Size') }}</th>
+                        <th class="px-4 py-3">{{ __('Bust') }}</th>
+                        <th class="px-4 py-3">{{ __('Waist') }}</th>
+                        <th class="px-4 py-3">{{ __('Hips') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-stone-soft text-stone-600">
@@ -22,6 +22,6 @@
             </table>
         </div>
 
-        <p class="mt-6 text-sm text-stone-500">For help choosing your size, please <a href="{{ route('contact') }}" class="text-accent hover:underline">contact us</a> — we are always happy to advise.</p>
+        <p class="mt-6 text-sm text-stone-500">{{ __('For help choosing your size, please') }} <a href="{{ route('contact') }}" class="text-accent hover:underline">{{ __('contact us') }}</a> {{ __('— we are always happy to advise.') }}</p>
     </section>
 </x-layouts.storefront>

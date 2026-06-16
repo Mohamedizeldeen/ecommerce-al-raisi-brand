@@ -41,6 +41,9 @@ return [
         'pay_url' => env('THAWANI_PAY_URL', 'https://uatcheckout.thawani.om/pay'),
         'secret_key' => env('THAWANI_SECRET_KEY'),
         'publishable_key' => env('THAWANI_PUBLISHABLE_KEY'),
+        // Optional shared secret appended to the webhook URL in the Thawani dashboard
+        // (e.g. /thawani/webhook?secret=...). When set, the webhook rejects mismatches.
+        'webhook_secret' => env('THAWANI_WEBHOOK_SECRET'),
     ],
 
     'hcaptcha' => [

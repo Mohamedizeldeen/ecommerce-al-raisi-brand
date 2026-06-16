@@ -30,7 +30,7 @@ Route::get('/atelier', [AtelierController::class, 'index'])->name('atelier');
 
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 
-Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/search', [SearchController::class, 'index'])->middleware('throttle:30,1')->name('search');
 
 Route::controller(CartController::class)->group(function () {
     Route::get('/cart', 'index')->name('cart.index');
@@ -38,7 +38,7 @@ Route::controller(CartController::class)->group(function () {
     Route::post('/cart/add', 'add')->name('cart.add');
     Route::patch('/cart/items/{item}', 'update')->name('cart.update');
     Route::delete('/cart/items/{item}', 'remove')->name('cart.remove');
-    Route::post('/cart/coupon', 'applyCoupon')->name('cart.coupon');
+    Route::post('/cart/coupon', 'applyCoupon')->middleware('throttle:10,1')->name('cart.coupon');
 });
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
@@ -46,13 +46,15 @@ Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.s
 Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 
-Route::post('/thawani/webhook', ThawaniWebhookController::class)->name('thawani.webhook');
+Route::post('/thawani/webhook', ThawaniWebhookController::class)
+    ->middleware('throttle:60,1')
+    ->name('thawani.webhook');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,10');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');

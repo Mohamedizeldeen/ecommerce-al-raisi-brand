@@ -50,9 +50,20 @@ class ProductResource extends Resource
                             $set('slug', Str::slug((string) $state));
                         }
                     }),
+                TextInput::make('name_ar')
+                    ->label('Name (العربية)')
+                    ->extraInputAttributes(['dir' => 'rtl']),
                 TextInput::make('slug')->required()->unique(ignoreRecord: true),
                 Textarea::make('description')->rows(4)->columnSpanFull(),
+                Textarea::make('description_ar')
+                    ->label('Description (العربية)')
+                    ->rows(4)
+                    ->extraInputAttributes(['dir' => 'rtl'])
+                    ->columnSpanFull(),
                 TextInput::make('fabric'),
+                TextInput::make('fabric_ar')
+                    ->label('Fabric (العربية)')
+                    ->extraInputAttributes(['dir' => 'rtl']),
                 TextInput::make('base_price_baisa')
                     ->label('Base price (OMR)')
                     ->prefix('OMR')
@@ -85,6 +96,8 @@ class ProductResource extends Resource
                     ->multiple()
                     ->reorderable()
                     ->image()
+                    ->maxSize(4096)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                     ->columnSpanFull(),
             ]),
             Section::make('SEO')->columns(2)->collapsed()->schema([

@@ -32,13 +32,11 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Amal Admin',
             'email' => 'admin@amalalraisi.com',
-            'is_admin' => true,
-        ]);
+        ])->forceFill(['is_admin' => true])->save();
 
         User::factory()->create([
             'name' => 'Test Customer',
             'email' => 'customer@example.com',
-            'is_admin' => false,
         ]);
 
         // --- Categories ------------------------------------------------------
@@ -123,8 +121,8 @@ class DatabaseSeeder extends Seeder
 
             if ($singleVariant) {
                 ProductVariant::factory()->for($product)->create([
-                    'size' => null,
-                    'color' => null,
+                    'size' => '',
+                    'color' => '',
                     'color_hex' => null,
                     'sku' => 'AMR-'.$product->id.'-STD',
                     'stock_qty' => rand(3, 20),
@@ -140,7 +138,7 @@ class DatabaseSeeder extends Seeder
                 foreach ($colors as $color) {
                     $index++;
                     ProductVariant::factory()->for($product)->create([
-                        'size' => $size,
+                        'size' => $size ?? '',
                         'color' => $color['name'],
                         'color_hex' => $color['hex'],
                         'sku' => 'AMR-'.$product->id.'-'.$index,

@@ -9,10 +9,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Translatable\HasTranslations;
 
 class Product extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia;
+    use HasFactory, HasTranslations, InteractsWithMedia;
+
+    /** @var list<string> */
+    public array $translatable = ['name', 'description', 'fabric', 'meta_title', 'meta_description'];
 
     protected $guarded = ['id'];
 
@@ -85,6 +89,10 @@ class Product extends Model implements HasMedia
 
     public function getInStockAttribute(): bool
     {
+        if (! $this->relationLoaded('variants')) {
+            $this->load('variants');
+        }
+
         return $this->variants->where('is_active', true)->sum('stock_qty') > 0;
     }
 

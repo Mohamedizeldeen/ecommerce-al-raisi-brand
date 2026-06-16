@@ -13,7 +13,7 @@ class CollectionController extends Controller
     public function index()
     {
         $collections = Collection::active()
-            ->withCount('products')
+            ->withCount(['products' => fn ($q) => $q->published()])
             ->orderBy('sort_order')
             ->orderByDesc('year')
             ->get()

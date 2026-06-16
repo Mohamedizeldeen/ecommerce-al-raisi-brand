@@ -5,6 +5,7 @@ namespace App\Actions\Orders;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Events\OrderPaid;
+use App\Models\Coupon;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 
@@ -43,6 +44,12 @@ class MarkOrderPaid
                         $variant->decrement('stock_qty', $decrement);
                     }
                 }
+            }
+
+            // Consume the coupon once, atomically, on confirmed payment so
+            // usage_limit is actually enforced (it was previously a no-op).
+            if ($fresh->coupon_code) {
+                Coupon::where('code', $fresh->coupon_code)->increment('used_count');
             }
 
             $fresh->statusHistories()->create([

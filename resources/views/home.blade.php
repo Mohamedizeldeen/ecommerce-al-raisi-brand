@@ -5,17 +5,17 @@
         <div class="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/45 to-ink/75"></div>
 
         <div class="relative z-10 mx-auto max-w-3xl px-4 text-center text-white">
-            <p class="animate-fade-up text-xs uppercase tracking-[0.4em] text-white/80" style="animation-delay:.1s">Omani Fashion House · Since 2006</p>
+            <p class="animate-fade-up text-xs uppercase tracking-[0.4em] text-white/80" style="animation-delay:.1s">{{ __('Omani Fashion House · Since 2006') }}</p>
             <h1 class="animate-fade-up mt-6 text-6xl leading-[0.92] sm:text-7xl lg:text-[7.5rem]" style="animation-delay:.25s">
-                Echoes<br><span class="italic text-white/85">of Time</span>
+                {{ __('Echoes') }}<br><span class="italic text-white/85">{{ __('of Time') }}</span>
             </h1>
             <p class="animate-fade-up mx-auto mt-8 max-w-xl text-base leading-relaxed text-white/80" style="animation-delay:.4s">
-                A twenty-year celebration of Omani heritage, reimagined for the modern wardrobe.
+                {{ __('A twenty-year celebration of Omani heritage, reimagined for the modern wardrobe.') }}
             </p>
             <div class="animate-fade-up mt-10" style="animation-delay:.55s">
                 <a href="{{ route('collections.index') }}"
                     class="group inline-flex items-center gap-3 bg-white px-9 py-4 text-xs uppercase tracking-[0.25em] text-ink transition hover:bg-accent hover:text-white">
-                    Shop Collections
+                    {{ __('Shop Collections') }}
                     <span class="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
                 </a>
             </div>
@@ -32,8 +32,8 @@
     @if ($featuredCollections->isNotEmpty())
         <section class="mx-auto max-w-7xl px-4 sm:px-6 py-24">
             <div x-data class="reveal mb-14 text-center" x-intersect.once="$el.classList.add('is-visible')">
-                <p class="text-xs uppercase tracking-[0.3em] text-accent">Curated</p>
-                <h2 class="mt-3 text-4xl text-ink">Featured Collections</h2>
+                <p class="text-xs uppercase tracking-[0.3em] text-accent">{{ __('Curated') }}</p>
+                <h2 class="mt-3 text-4xl text-ink">{{ __('Featured Collections') }}</h2>
             </div>
             <div class="grid gap-6 md:grid-cols-3">
                 @foreach ($featuredCollections as $collection)
@@ -46,7 +46,7 @@
                         <div class="absolute inset-x-0 bottom-0 p-6 text-center text-white">
                             <p class="text-xs uppercase tracking-[0.25em] text-white/80">{{ $collection->season ?? $collection->type->getLabel() }}</p>
                             <h3 class="mt-2 font-serif text-3xl">{{ $collection->name }}</h3>
-                            <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.2em] opacity-0 transition duration-500 group-hover:opacity-100">Explore &rarr;</span>
+                            <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.2em] opacity-0 transition duration-500 group-hover:opacity-100">{{ __('Explore') }} &rarr;</span>
                         </div>
                     </a>
                 @endforeach
@@ -59,8 +59,8 @@
         <section class="bg-sand py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6">
                 <div x-data class="reveal mb-14 text-center" x-intersect.once="$el.classList.add('is-visible')">
-                    <p class="text-xs uppercase tracking-[0.3em] text-accent">Iconic</p>
-                    <h2 class="mt-3 text-4xl text-ink">Signature Pieces</h2>
+                    <p class="text-xs uppercase tracking-[0.3em] text-accent">{{ __('Iconic') }}</p>
+                    <h2 class="mt-3 text-4xl text-ink">{{ __('Signature Pieces') }}</h2>
                 </div>
                 <div class="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
                     @foreach ($featuredProducts as $product)
@@ -78,10 +78,10 @@
         <section class="mx-auto max-w-7xl px-4 sm:px-6 py-24">
             <div x-data class="reveal mb-12 flex items-end justify-between" x-intersect.once="$el.classList.add('is-visible')">
                 <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-accent">Just In</p>
-                    <h2 class="mt-3 text-4xl text-ink">New Arrivals</h2>
+                    <p class="text-xs uppercase tracking-[0.3em] text-accent">{{ __('Just In') }}</p>
+                    <h2 class="mt-3 text-4xl text-ink">{{ __('New Arrivals') }}</h2>
                 </div>
-                <a href="{{ route('search') }}" class="text-xs uppercase tracking-[0.18em] text-accent link-underline">View all</a>
+                <a href="{{ route('search') }}" class="text-xs uppercase tracking-[0.18em] text-accent link-underline">{{ __('View all') }}</a>
             </div>
             <div class="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
                 @foreach ($newArrivals as $product)

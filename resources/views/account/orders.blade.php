@@ -1,8 +1,8 @@
-<x-layouts.storefront title="My Orders">
+<x-layouts.storefront :title="__('My Orders')">
     <section class="mx-auto max-w-5xl px-4 sm:px-6 py-12">
         <div class="mb-8 flex items-center justify-between">
-            <h1 class="text-3xl text-ink">My Orders</h1>
-            <a href="{{ route('account.dashboard') }}" class="text-xs uppercase tracking-[0.15em] text-accent hover:underline">Account</a>
+            <h1 class="text-3xl text-ink">{{ __('My Orders') }}</h1>
+            <a href="{{ route('account.dashboard') }}" class="text-xs uppercase tracking-[0.15em] text-accent hover:underline">{{ __('Account') }}</a>
         </div>
 
         @if ($orders->count())
@@ -19,7 +19,7 @@
             </div>
             <div class="mt-8">{{ $orders->links() }}</div>
         @else
-            <p class="py-6 text-stone-500">You have no orders yet.</p>
+            <p class="py-6 text-stone-500">{{ __('You have no orders yet.') }}</p>
         @endif
     </section>
 </x-layouts.storefront>

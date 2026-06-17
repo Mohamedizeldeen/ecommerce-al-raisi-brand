@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="'Order '.$order->order_number">
+<x-layouts.storefront :title="__('Order').' '.$order->order_number">
     <section class="mx-auto max-w-3xl px-4 sm:px-6 py-12">
         <a href="{{ route('account.orders') }}" class="text-xs uppercase tracking-[0.15em] text-accent hover:underline">&larr; {{ __('Back to orders') }}</a>
 

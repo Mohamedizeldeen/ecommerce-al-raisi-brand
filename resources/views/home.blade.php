@@ -53,7 +53,7 @@
                             class="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                         <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"></div>
                         <div class="absolute inset-x-0 bottom-0 p-6 text-center text-white">
-                            <p class="text-xs uppercase tracking-[0.25em] text-white/80">{{ $collection->season ?? $collection->type->getLabel() }}</p>
+                            <p class="text-xs uppercase tracking-[0.25em] text-white/80">{{ $collection->season ?? __($collection->type->getLabel()) }}</p>
                             <h3 class="mt-2 font-serif text-3xl">{{ $collection->name }}</h3>
                             <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.2em] opacity-0 transition duration-500 group-hover:opacity-100">{{ __('Explore') }} &rarr;</span>
                         </div>

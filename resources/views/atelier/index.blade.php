@@ -1,13 +1,12 @@
-<x-layouts.storefront title="The Atelier"
-    description="Behind the scenes at Amal Al Raisi — fashion-show films, fittings and the making of each collection.">
+<x-layouts.storefront :title="__('The Atelier')"
+    :description="__('Behind the scenes at Amal Al Raisi — fashion-show films, fittings and the making of each collection.')">
 
     <section class="bg-ink text-white">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 py-24 text-center">
-            <p class="text-xs uppercase tracking-[0.3em] text-accent">Behind the Scenes</p>
-            <h1 class="mt-4 text-4xl lg:text-6xl">The Atelier</h1>
+            <p class="text-xs uppercase tracking-[0.3em] text-accent">{{ __('Behind the Scenes') }}</p>
+            <h1 class="mt-4 text-4xl lg:text-6xl">{{ __('The Atelier') }}</h1>
             <p class="mx-auto mt-5 max-w-2xl leading-relaxed text-white/70">
-                Step inside the house — from the cutting table to the runway. Films, fittings and the
-                making of each collection.
+                {{ __('Step inside the house — from the cutting table to the runway. Films, fittings and the making of each collection.') }}
             </p>
         </div>
     </section>
@@ -45,7 +44,7 @@
                 </div>
             </article>
         @empty
-            <p class="text-center text-stone-500">Our atelier films and stories are coming soon.</p>
+            <p class="text-center text-stone-500">{{ __('Our atelier films and stories are coming soon.') }}</p>
         @endforelse
     </section>
 </x-layouts.storefront>

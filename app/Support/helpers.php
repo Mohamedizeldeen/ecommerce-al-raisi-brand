@@ -23,3 +23,17 @@ if (! function_exists('money')) {
         return Money::display($baisa);
     }
 }
+
+if (! function_exists('asset_version')) {
+    /**
+     * A cache-busted URL for a file in /public. Appends "?v=<mtime>" so browsers
+     * and CDNs (e.g. Cloudways Varnish) fetch the new copy whenever the file
+     * changes — e.g. after replacing the hero video or a static image.
+     */
+    function asset_version(string $path): string
+    {
+        $mtime = @filemtime(public_path($path));
+
+        return asset($path).($mtime ? '?v='.$mtime : '');
+    }
+}

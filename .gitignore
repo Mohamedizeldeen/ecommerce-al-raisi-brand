@@ -25,3 +25,6 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Uncompressed hero source — only the compressed public/videos/hero.mp4 is used
+/public/videos/landing-page/

@@ -161,7 +161,7 @@ class Product extends Model implements HasMedia
         if ($pool === null) {
             $files = glob(public_path('images/products/*.jpg')) ?: [];
             sort($files);
-            $pool = array_map(fn ($file) => asset('images/products/'.basename($file)), $files);
+            $pool = array_map(fn ($file) => asset_version('images/products/'.basename($file)), $files);
         }
 
         if ($pool === []) {

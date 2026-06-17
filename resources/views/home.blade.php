@@ -6,12 +6,12 @@
              Video is gated to >= md screens to save mobile data. --}}
         <video class="absolute inset-0 hidden h-full w-full object-cover animate-fade-in md:block"
             autoplay muted loop playsinline preload="metadata"
-            poster="{{ asset('images/heroes/hero.jpg') }}">
-            <source src="{{ asset('videos/hero.mp4') }}" type="video/mp4">
-            <img src="{{ asset('images/heroes/hero.jpg') }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+            poster="{{ asset_version('images/heroes/hero.jpg') }}">
+            <source src="{{ asset_version('videos/hero.mp4') }}" type="video/mp4">
+            <img src="{{ asset_version('images/heroes/hero.jpg') }}" alt="" class="absolute inset-0 h-full w-full object-cover">
         </video>
         {{-- Mobile hero (< md): static image instead of the video. --}}
-        <img src="{{ asset('images/heroes/hero.jpg') }}" alt=""
+        <img src="{{ asset_version('images/heroes/hero.jpg') }}" alt=""
             class="absolute inset-0 h-full w-full object-cover animate-fade-in md:hidden">
         <div class="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/45 to-ink/75"></div>
 

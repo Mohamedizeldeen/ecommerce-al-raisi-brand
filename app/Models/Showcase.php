@@ -47,7 +47,7 @@ class Showcase extends Model
         if ($this->cover_image) {
             return Str::startsWith($this->cover_image, ['http://', 'https://'])
                 ? $this->cover_image
-                : asset('storage/'.$this->cover_image);
+                : asset_version('storage/'.$this->cover_image);
         }
 
         static $pool = null;
@@ -55,11 +55,11 @@ class Showcase extends Model
         if ($pool === null) {
             $files = glob(public_path('images/collections/*.jpg')) ?: [];
             sort($files);
-            $pool = array_map(fn ($file) => asset('images/collections/'.basename($file)), $files);
+            $pool = array_map(fn ($file) => asset_version('images/collections/'.basename($file)), $files);
         }
 
         if ($pool === []) {
-            return asset('images/heroes/hero.jpg');
+            return asset_version('images/heroes/hero.jpg');
         }
 
         return $pool[((int) $this->id + $offset) % count($pool)];

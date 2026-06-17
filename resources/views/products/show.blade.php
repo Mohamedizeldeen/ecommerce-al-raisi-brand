@@ -23,7 +23,48 @@
     $metaDescription = $product->meta_description ?: \Illuminate\Support\Str::limit(strip_tags((string) $product->description), 150);
 @endphp
 
-<x-layouts.storefront :title="$product->name" :description="$metaDescription">
+<x-layouts.storefront :title="$product->meta_title ?: $product->name" :description="$metaDescription" :image="$product->displayImageUrl()">
+    @push('head')
+        @php
+            $productLd = [
+                '@context' => 'https://schema.org',
+                '@type' => 'Product',
+                'name' => $product->name,
+                'image' => array_values(array_filter($gallery)),
+                'description' => strip_tags((string) $product->description),
+                'offers' => [
+                    '@type' => 'Offer',
+                    'price' => (int) $product->base_price_baisa / 1000,
+                    'priceCurrency' => 'OMR',
+                    'url' => url()->current(),
+                    'availability' => $product->in_stock
+                        ? 'https://schema.org/InStock'
+                        : 'https://schema.org/OutOfStock',
+                ],
+            ];
+            $breadcrumbLd = [
+                '@context' => 'https://schema.org',
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => [
+                    [
+                        '@type' => 'ListItem',
+                        'position' => 1,
+                        'name' => config('app.name'),
+                        'item' => url('/'),
+                    ],
+                    [
+                        '@type' => 'ListItem',
+                        'position' => 2,
+                        'name' => $product->name,
+                        'item' => url()->current(),
+                    ],
+                ],
+            ];
+        @endphp
+        <script type="application/ld+json">{!! json_encode($productLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+        <script type="application/ld+json">{!! json_encode($breadcrumbLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endpush
+
     <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12" x-data="productPage(@js($variantData), @js($colorImages), @js($gallery))">
         <div class="grid gap-10 lg:grid-cols-2">
             {{-- Gallery (main image follows the selected colour) --}}
@@ -113,6 +154,71 @@
                         <span x-show="$store.cart.loading" x-cloak>{{ __('Adding…') }}</span>
                     </button>
                 </form>
+
+                {{-- Virtual try-on (AI: upload a photo, see the product on you) --}}
+                @if (config('assistant.try_on.enabled', true))
+                    <div x-data="virtualTryOn(@js($product->slug))" class="mt-4">
+                        <button type="button" @click="reset(); open = true"
+                            class="flex w-full items-center justify-center gap-2 border border-ink py-3.5 text-xs uppercase tracking-[0.2em] text-ink transition hover:bg-ink hover:text-white">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+                            </svg>
+                            {{ __('Virtual Try-On') }}
+                        </button>
+
+                        <div x-show="open" x-cloak x-transition.opacity.duration.300ms @click="open = false"
+                            class="fixed inset-0 z-[110] bg-ink/60"></div>
+                        <div x-show="open" x-cloak
+                            x-transition:enter="transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                            x-transition:enter-start="translate-y-4 opacity-0 sm:scale-95"
+                            x-transition:enter-end="translate-y-0 opacity-100 sm:scale-100"
+                            @keydown.escape.window="open = false"
+                            class="fixed left-1/2 top-1/2 z-[120] flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                            <header class="flex items-center justify-between border-b border-stone-soft px-5 py-4">
+                                <div>
+                                    <p class="font-serif text-lg text-ink">{{ __('Virtual Try-On') }}</p>
+                                    <p class="text-[11px] text-stone-400">{{ $product->name }}</p>
+                                </div>
+                                <button @click="open = false" aria-label="{{ __('Close') }}" class="text-stone-400 transition hover:text-ink">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                                </button>
+                            </header>
+
+                            <div class="min-h-0 flex-1 overflow-y-auto p-5">
+                                <div x-show="! result">
+                                    <p class="mb-4 text-sm text-stone-500">{{ __('Upload a clear, full-length photo of yourself to preview this piece on you.') }}</p>
+                                    <label class="flex aspect-[3/4] cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-stone-soft bg-sand/40 transition hover:border-accent">
+                                        <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="pick($event)">
+                                        <template x-if="preview"><img :src="preview" alt="" class="h-full w-full object-cover"></template>
+                                        <template x-if="! preview"><span class="px-6 text-center text-sm text-stone-400">{{ __('Tap to upload your photo') }}</span></template>
+                                    </label>
+                                    <p x-show="error" x-text="error" x-cloak class="mt-3 text-sm text-red-600"></p>
+                                    <button type="button" @click="run()" :disabled="! file || loading"
+                                        class="mt-4 w-full bg-ink py-3.5 text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40">
+                                        <span x-show="! loading">{{ __('Try it on') }}</span>
+                                        <span x-show="loading" x-cloak>{{ __('Creating your look…') }}</span>
+                                    </button>
+                                </div>
+
+                                <div x-show="result" x-cloak>
+                                    <div class="overflow-hidden rounded-xl bg-sand">
+                                        <img :src="result" alt="" class="w-full">
+                                    </div>
+                                    <div class="mt-4 flex gap-2">
+                                        <a :href="result" download="amal-try-on.png"
+                                            class="flex-1 bg-ink py-3 text-center text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent">{{ __('Download') }}</a>
+                                        <button type="button" @click="reset()"
+                                            class="flex-1 border border-stone-soft py-3 text-xs uppercase tracking-[0.2em] text-ink transition hover:border-ink">{{ __('Try another photo') }}</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="border-t border-stone-soft px-5 py-3 text-[11px] leading-relaxed text-stone-400">
+                                {{ __('AI-generated preview — results are approximate. Your photo is used only to create this preview and is not stored.') }}
+                            </p>
+                        </div>
+                    </div>
+                @endif
 
                 {{-- Specs --}}
                 @if ($product->fabric || ! empty($product->specs))

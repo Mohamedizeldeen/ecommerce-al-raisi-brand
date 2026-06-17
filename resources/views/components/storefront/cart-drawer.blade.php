@@ -1,16 +1,20 @@
+@php($dir = config('regions.locales.'.app()->getLocale().'.dir', 'ltr'))
+{{-- In RTL the bag icon sits on the left, so the drawer anchors to the inline-end
+     (left) and slides in from there; in LTR it anchors right and slides from right. --}}
+@php($offscreen = $dir === 'rtl' ? '-translate-x-full' : 'translate-x-full')
 <div x-data x-cloak>
     <div x-show="$store.cart.open" x-transition.opacity.duration.300ms
         @click="$store.cart.close()" class="fixed inset-0 z-[80] bg-ink/40"></div>
 
     <aside x-show="$store.cart.open"
         x-transition:enter="transition duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        x-transition:enter-start="translate-x-full"
+        x-transition:enter-start="{{ $offscreen }}"
         x-transition:enter-end="translate-x-0"
         x-transition:leave="transition duration-300 ease-in"
         x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="translate-x-full"
+        x-transition:leave-end="{{ $offscreen }}"
         @keydown.escape.window="$store.cart.close()"
-        class="fixed inset-y-0 right-0 z-[90] flex w-full max-w-md flex-col bg-white shadow-2xl">
+        class="fixed inset-y-0 end-0 z-[90] flex w-full max-w-md flex-col bg-white shadow-2xl">
 
         <header class="flex items-center justify-between border-b border-stone-soft px-6 py-5">
             <h2 class="text-xs uppercase tracking-[0.25em] text-ink">

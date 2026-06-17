@@ -77,6 +77,11 @@
     animation: marquee 32s linear infinite;
 }
 
+/* Pause the infinite marquee while hovered so it can be read. */
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+
 @keyframes fade-up {
     from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: none; }
@@ -102,4 +107,22 @@
 
 .animate-scroll-cue {
     animation: scroll-cue 1.8s ease-in-out infinite;
+}
+
+/* Respect users who prefer reduced motion: kill the looping/entrance animations
+   and reveal transitions, showing all content immediately with no transform. */
+@media (prefers-reduced-motion: reduce) {
+    .animate-marquee,
+    .animate-scroll-cue,
+    .animate-fade-up,
+    .animate-fade-in {
+        animation: none;
+    }
+
+    .js .reveal,
+    .js .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
 }

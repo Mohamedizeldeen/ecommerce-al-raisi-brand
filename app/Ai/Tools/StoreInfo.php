@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Setting;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
 
@@ -32,6 +33,12 @@ class StoreInfo implements Tool
     }
 
     public function handle(Request $request): string
+    {
+        // Store info is static-ish — cache the built JSON per locale for 15 minutes.
+        return Cache::remember('storeinfo:'.app()->getLocale(), 900, fn () => $this->build());
+    }
+
+    private function build(): string
     {
         $freeThreshold = (int) Setting::get('free_shipping_threshold_baisa', 100000);
         $flatRate = (int) Setting::get('shipping_flat_baisa', 2000);

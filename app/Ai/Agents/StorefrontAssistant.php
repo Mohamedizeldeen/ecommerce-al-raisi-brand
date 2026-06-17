@@ -67,6 +67,11 @@ class StorefrontAssistant implements Agent, Conversational, HasTools
             "عباية" -> "abaya", "أسود" -> "black"). If the first search is empty, try
             another sensible English keyword before concluding nothing was found.
             Always REPLY in the customer's own language, even though you search in English.
+        2c. AVAILABILITY / STOCK: For any specific availability, size, colour or
+            "is it in stock" question, you MUST call get_product_details and report the
+            in_stock status for the relevant variant(s). NEVER infer availability from the
+            search_products summary — it lists colours and sizes WITHOUT stock levels, so a
+            colour/size appearing there does NOT mean it is in stock.
         3. IF THE TOOLS DO NOT CONTAIN THE ANSWER (e.g. a product is not found, or a
            detail is missing), say clearly that you do not have that information, and
            invite the customer to contact the team on {$phone}. Do not make something up.

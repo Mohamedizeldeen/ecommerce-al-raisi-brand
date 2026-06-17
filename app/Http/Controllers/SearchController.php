@@ -18,19 +18,35 @@ class SearchController extends Controller
 
         if ($term !== '') {
             // Escape LIKE wildcards so user input is treated literally.
-            $escaped = addcslashes($term, '%_\\');
+            $like = '%'.addcslashes($term, '%_\\').'%';
+            $locale = app()->getLocale();
 
-            $query->where(function ($q) use ($escaped) {
-                $q->where('name', 'like', "%{$escaped}%")
-                    ->orWhere('description', 'like', "%{$escaped}%")
-                    ->orWhere('fabric', 'like', "%{$escaped}%");
+            // Translatable columns store JSON like {"en":"...","ar":"..."}.
+            // Match the active-locale value via a portable JSON expression, and
+            // fall back to the raw column so data lacking the active-locale key
+            // (e.g. English-only content shown in the Arabic UI) still matches.
+            $jsonLike = function ($q, string $column) use ($like, $locale) {
+                $expr = "JSON_UNQUOTE(JSON_EXTRACT(`{$column}`, CONCAT('\$.\"', ?, '\"'))) LIKE ?";
+
+                $q->whereRaw($expr, [$locale, $like])
+                    ->orWhere($column, 'like', $like);
+            };
+
+            $query->where(function ($q) use ($jsonLike, $like) {
+                $q->where(fn ($sub) => $jsonLike($sub, 'name'))
+                    ->orWhere(fn ($sub) => $jsonLike($sub, 'description'))
+                    ->orWhere(fn ($sub) => $jsonLike($sub, 'fabric'))
+                    ->orWhereHas('categories', fn ($c) => $c->where('name', 'like', $like))
+                    ->orWhereHas('collections', fn ($c) => $c->where('name', 'like', $like));
             });
         }
 
-        $products = $this->applyProductSort($query, $request)
-            ->orderBy('id')
-            ->paginate(12)
-            ->withQueryString();
+        // Order by relevance first, then honour the chosen storefront sort
+        // (which defaults to published_at desc, id desc).
+        $products = $this->applyProductSort(
+            $query->orderByDesc('is_featured'),
+            $request
+        )->paginate(12)->withQueryString();
 
         return view('search', compact('products', 'term'));
     }

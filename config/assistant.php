@@ -27,4 +27,21 @@ return [
 
     // Per-request timeout (seconds) for the model call.
     'timeout' => (int) env('ASSISTANT_TIMEOUT', 30),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Virtual Try-On ("Nano Banana" — Gemini image model)
+    |--------------------------------------------------------------------------
+    | Lets a shopper upload a photo of themselves and see the product on them.
+    | Requires a Gemini API key with IMAGE quota (a paid/billing-enabled plan —
+    | the image model is NOT available on the free tier).
+    */
+    'try_on' => [
+        'enabled' => env('TRY_ON_ENABLED', true),
+        // gemini-2.5-flash-image (Nano Banana). Alternatives: nano-banana-pro-preview, gemini-3-pro-image.
+        'model' => env('TRY_ON_MODEL', 'gemini-2.5-flash-image'),
+        'timeout' => (int) env('TRY_ON_TIMEOUT', 90),
+        // Global cap on AI try-on generations per calendar day (cost guard).
+        'daily_limit' => (int) env('TRY_ON_DAILY_LIMIT', 200),
+    ],
 ];

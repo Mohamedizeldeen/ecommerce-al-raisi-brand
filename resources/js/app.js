@@ -240,6 +240,58 @@ Alpine.data('chatAssistant', () => ({
     },
 }));
 
+// Virtual try-on (AI) — shopper uploads a photo and sees the product on them.
+Alpine.data('virtualTryOn', (slug) => ({
+    open: false,
+    loading: false,
+    error: '',
+    preview: '',
+    result: '',
+    file: null,
+
+    pick(event) {
+        const file = event.target.files?.[0];
+        if (! file) return;
+        this.file = file;
+        this.result = '';
+        this.error = '';
+        this.preview = URL.createObjectURL(file);
+    },
+
+    async run() {
+        if (! this.file || this.loading) return;
+        this.loading = true;
+        this.error = '';
+        this.result = '';
+        try {
+            const body = new FormData();
+            body.append('photo', this.file);
+            const res = await fetch(`/products/${slug}/try-on`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf(), Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.image) {
+                this.result = data.image;
+            } else {
+                this.error = data.error || 'Could not create your try-on. Please try again.';
+            }
+        } catch (e) {
+            this.error = 'Something went wrong. Please try again.';
+        } finally {
+            this.loading = false;
+        }
+    },
+
+    reset() {
+        this.result = '';
+        this.error = '';
+        this.preview = '';
+        this.file = null;
+    },
+}));
+
 window.Alpine = Alpine;
 
 Alpine.start();

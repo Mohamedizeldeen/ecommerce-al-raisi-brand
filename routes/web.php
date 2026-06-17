@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThawaniWebhookController;
+use App\Http\Controllers\VirtualTryOnController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -29,6 +30,11 @@ Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->na
 Route::get('/atelier', [AtelierController::class, 'index'])->name('atelier');
 
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+
+// Virtual try-on (Gemini image model) — heavily throttled (image generation is costly).
+Route::post('/products/{product:slug}/try-on', [VirtualTryOnController::class, 'store'])
+    ->middleware('throttle:6,10')
+    ->name('products.try-on');
 
 Route::get('/search', [SearchController::class, 'index'])->middleware('throttle:30,1')->name('search');
 

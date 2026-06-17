@@ -38,6 +38,14 @@ class ProductResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    /** @return array<int, string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'slug'];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -125,6 +133,8 @@ class ProductResource extends Resource
                     ->getStateUsing(fn (Product $record) => $record->variants()->count()),
                 TextColumn::make('stock')
                     ->label('Stock')
+                    ->badge()
+                    ->color(fn ($state) => (int) $state === 0 ? 'danger' : ((int) $state <= 5 ? 'warning' : 'success'))
                     ->getStateUsing(fn (Product $record) => (int) $record->variants()->sum('stock_qty')),
                 IconColumn::make('is_active')->label('Active')->boolean(),
                 IconColumn::make('is_featured')->label('Featured')->boolean(),

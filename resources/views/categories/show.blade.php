@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="$category->name">
+<x-layouts.storefront :title="$category->name" :description="$category->description" :image="$products->first()?->primaryImageUrl()">
     <section class="border-b border-stone-soft">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12 text-center">
             <h1 class="text-4xl text-ink">{{ $category->name }}</h1>

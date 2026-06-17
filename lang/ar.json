@@ -190,5 +190,19 @@
     "Assistant": "المساعد",
     "Hi! Ask me about our products, sizing, shipping & returns.": "مرحباً! اسألني عن منتجاتنا والمقاسات والشحن والإرجاع.",
     "Send": "إرسال",
-    "Chat with us": "تواصل معنا"
+    "Chat with us": "تواصل معنا",
+    "Virtual Try-On": "جرّبيها افتراضيًا",
+    "Upload a clear, full-length photo of yourself to preview this piece on you.": "ارفعي صورة واضحة بكامل الطول لمعاينة القطعة عليكِ.",
+    "Tap to upload your photo": "اضغطي لرفع صورتك",
+    "Try it on": "جرّبيها",
+    "Creating your look…": "جارٍ إنشاء إطلالتك…",
+    "Download": "تحميل",
+    "Try another photo": "جرّبي صورة أخرى",
+    "AI-generated preview — results are approximate. Your photo is used only to create this preview and is not stored.": "معاينة مُولّدة بالذكاء الاصطناعي — النتائج تقريبية. تُستخدم صورتك فقط لإنشاء هذه المعاينة ولا يتم تخزينها.",
+    "Virtual try-on is busy right now — please try again in a little while.": "خدمة التجربة الافتراضية مشغولة حاليًا — حاولي بعد قليل.",
+    "We could not create your try-on. Please try a clearer, well-lit photo.": "تعذّر إنشاء التجربة. استخدمي صورة أوضح وبإضاءة جيدة.",
+    "We could not create your try-on. Please try another photo.": "تعذّر إنشاء التجربة. جرّبي صورة أخرى.",
+    "Virtual try-on is unavailable right now. Please try again later.": "خدمة التجربة الافتراضية غير متاحة حاليًا. حاولي لاحقًا.",
+    "Please upload a clear photo (JPG, PNG or WebP, up to 8MB).": "يرجى رفع صورة واضحة (JPG أو PNG أو WebP، حتى ٨ ميجابايت).",
+    "Store assistant chat": "محادثة مساعد المتجر"
 }

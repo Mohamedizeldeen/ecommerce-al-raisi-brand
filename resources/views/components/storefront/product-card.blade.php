@@ -2,7 +2,8 @@
 
 <a href="{{ route('products.show', $product) }}" class="group block">
     <div class="relative aspect-[4/5] overflow-hidden bg-sand">
-        <img src="{{ $product->displayImageUrl() }}" alt="{{ $product->name }}" loading="lazy"
+        <img src="{{ $product->hasMedia('gallery') ? ($product->getFirstMediaUrl('gallery', 'card') ?: $product->displayImageUrl()) : $product->displayImageUrl() }}"
+            alt="{{ $product->name }}" loading="lazy" decoding="async" width="600" height="750"
             class="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
 
         @unless ($product->in_stock)

@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="$collection->name" :description="$collection->description">
+<x-layouts.storefront :title="$collection->name" :description="$collection->description" :image="$collection->coverImageUrl()">
     <section class="relative overflow-hidden">
         <img src="{{ $collection->coverImageUrl() }}" alt="" class="absolute inset-0 h-full w-full object-cover">
         <div class="absolute inset-0 bg-ink/55"></div>

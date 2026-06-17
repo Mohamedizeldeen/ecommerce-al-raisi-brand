@@ -8,6 +8,9 @@
         ['label' => 'About', 'url' => '/about'],
         ['label' => 'Contact', 'url' => '/contact'],
     ];
+
+    // Active when the current request path matches the item's URL (leading slash stripped).
+    $isActive = fn (string $url) => request()->is(ltrim($url, '/'));
 @endphp
 
 <header x-data="{ open: false, scrolled: false }" @scroll.window="scrolled = window.scrollY > 24"
@@ -27,7 +30,8 @@
 
             <nav class="hidden items-center gap-6 text-[11px] uppercase tracking-[0.18em] text-ink/80 xl:flex">
                 @foreach ($nav as $item)
-                    <a href="{{ $item['url'] }}" class="link-underline whitespace-nowrap hover:text-accent">{{ __($item['label']) }}</a>
+                    <a href="{{ $item['url'] }}" @if ($isActive($item['url'])) aria-current="page" @endif
+                        class="link-underline whitespace-nowrap hover:text-accent {{ $isActive($item['url']) ? 'text-accent [background-size:100%_1px]' : '' }}">{{ __($item['label']) }}</a>
                 @endforeach
             </nav>
 
@@ -59,7 +63,8 @@
     <div x-show="open" x-cloak x-transition.origin.top.duration.300ms class="border-t border-stone-soft bg-white xl:hidden">
         <nav class="flex flex-col px-4 py-3 text-sm uppercase tracking-[0.15em] text-ink/80">
             @foreach ($nav as $item)
-                <a href="{{ $item['url'] }}" class="py-2 hover:text-accent">{{ __($item['label']) }}</a>
+                <a href="{{ $item['url'] }}" @if ($isActive($item['url'])) aria-current="page" @endif
+                    class="py-2 hover:text-accent {{ $isActive($item['url']) ? 'text-accent underline underline-offset-4' : '' }}">{{ __($item['label']) }}</a>
             @endforeach
         </nav>
 

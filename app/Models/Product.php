@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Translatable\HasTranslations;
 
 class Product extends Model implements HasMedia
@@ -57,6 +58,33 @@ class Product extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('gallery');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        // Skip conversions when no image driver is installed so uploads still work
+        // (the storefront falls back to the original image). Production should have GD.
+        if (! extension_loaded('gd') && ! extension_loaded('imagick')) {
+            return;
+        }
+
+        $this->addMediaConversion('thumb')
+            ->width(120)
+            ->height(120)
+            ->format('webp')
+            ->nonQueued();
+
+        $this->addMediaConversion('card')
+            ->width(600)
+            ->height(750)
+            ->format('webp')
+            ->nonQueued();
+
+        $this->addMediaConversion('full')
+            ->width(1200)
+            ->height(1500)
+            ->format('webp')
+            ->nonQueued();
     }
 
     public function scopeActive(Builder $query): void

@@ -7,6 +7,7 @@ use App\Filament\Resources\ContactMessages\Pages\EditContactMessage;
 use App\Filament\Resources\ContactMessages\Pages\ListContactMessages;
 use App\Models\ContactMessage;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,6 +19,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class ContactMessageResource extends Resource
@@ -29,6 +31,18 @@ class ContactMessageResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $unread = static::getModel()::where('is_read', false)->count();
+
+        return $unread > 0 ? (string) $unread : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -54,6 +68,7 @@ class ContactMessageResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
@@ -77,9 +92,21 @@ class ContactMessageResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                TernaryFilter::make('is_read')
+                    ->label('Status')
+                    ->placeholder('All messages')
+                    ->trueLabel('Read')
+                    ->falseLabel('Unread'),
             ])
             ->recordActions([
+                Action::make('markRead')
+                    ->label('Mark read')->icon('heroicon-o-check')->color('success')
+                    ->visible(fn (ContactMessage $record) => ! $record->is_read)
+                    ->action(fn (ContactMessage $record) => $record->update([
+                        'is_read' => true,
+                        'replied_at' => $record->replied_at ?? now(),
+                    ]))
+                    ->successNotificationTitle('Marked as read'),
                 EditAction::make(),
             ])
             ->toolbarActions([

@@ -46,10 +46,12 @@ class MarkOrderPaid
                 }
             }
 
-            // Consume the coupon once, atomically, on confirmed payment so
-            // usage_limit is actually enforced (it was previously a no-op).
+            // Consume the coupon once, only while still within its usage limit —
+            // the conditional WHERE makes this atomic against concurrent redemptions.
             if ($fresh->coupon_code) {
-                Coupon::where('code', $fresh->coupon_code)->increment('used_count');
+                Coupon::where('code', $fresh->coupon_code)
+                    ->where(fn ($q) => $q->whereNull('usage_limit')->orWhereColumn('used_count', '<', 'usage_limit'))
+                    ->increment('used_count');
             }
 
             $fresh->statusHistories()->create([

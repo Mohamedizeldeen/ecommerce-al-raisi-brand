@@ -47,6 +47,22 @@
                 </div>
             </div>
         </div>
+
+        {{-- Showroom location (Google Maps embed — no API key needed via output=embed) --}}
+        <div class="mt-14">
+            <h2 class="mb-4 text-xs uppercase tracking-[0.18em] text-ink">{{ __('Find Us') }}</h2>
+            <div class="h-80 w-full overflow-hidden border border-stone-soft sm:h-96">
+                <iframe
+                    src="https://www.google.com/maps?q=23.5925625,58.3775625&amp;z=16&amp;hl={{ app()->getLocale() }}&amp;output=embed"
+                    class="h-full w-full" style="border:0" loading="lazy" allowfullscreen
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="{{ __('Showroom location map') }}"></iframe>
+            </div>
+            <a href="https://maps.app.goo.gl/gDZwEe8qRH3qmCBy9" target="_blank" rel="noopener"
+                class="mt-3 inline-flex items-center gap-1 text-xs uppercase tracking-[0.18em] text-accent link-underline">
+                {{ __('Open in Google Maps') }} &rarr;
+            </a>
+        </div>
     </section>
 
     @if (config('services.hcaptcha.sitekey'))

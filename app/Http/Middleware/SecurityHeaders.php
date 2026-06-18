@@ -32,7 +32,7 @@ class SecurityHeaders
                 "font-src 'self' https://fonts.bunny.net data:",
                 "img-src 'self' data: https:",
                 "connect-src 'self'",
-                "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
+                "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://maps.google.com",
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",

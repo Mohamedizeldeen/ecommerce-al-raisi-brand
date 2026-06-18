@@ -25,8 +25,8 @@
             </button>
 
             <a href="/" aria-label="{{ config('app.name') }}" class="shrink-0">
-                <img src="{{ asset_version('images/amal-logo-ink.png') }}" alt="{{ config('app.name') }}"
-                    width="540" height="104" class="h-7 w-auto sm:h-9">
+                <img src="{{ asset_version('images/amal-logo-font-black.png') }}" alt="{{ config('app.name') }}"
+                    width="760" height="146" class="h-7 w-auto sm:h-9">
             </a>
 
             <nav class="hidden items-center gap-6 text-[11px] uppercase tracking-[0.18em] text-ink/80 xl:flex">

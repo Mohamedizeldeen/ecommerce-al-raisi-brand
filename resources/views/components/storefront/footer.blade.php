@@ -12,9 +12,10 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div class="grid gap-12 lg:grid-cols-4">
             <div class="lg:col-span-1">
-                <img src="{{ asset_version('images/amal-logo-white.png') }}" alt="{{ config('app.name') }}"
-                    width="540" height="104" class="h-10 w-auto">
-                <span class="sr-only">{{ config('app.name') }}</span>
+                {{-- Grey-on-black signature; mix-blend-screen drops the black box so only
+                     the signature shows on the dark footer. --}}
+                <img src="{{ asset_version('images/amal-logo.avif') }}" alt="{{ config('app.name') }}"
+                    width="540" height="104" class="h-12 w-auto mix-blend-screen">
                 <p class="mt-4 text-sm leading-relaxed text-white/60">
                     {{ __('Omani fashion house celebrating heritage through contemporary design since 2006.') }}
                 </p>

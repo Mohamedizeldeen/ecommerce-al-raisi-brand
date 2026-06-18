@@ -12,7 +12,9 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div class="grid gap-12 lg:grid-cols-4">
             <div class="lg:col-span-1">
-                <h3 class="font-serif text-2xl uppercase tracking-wide">{{ config('app.name') }}</h3>
+                <img src="{{ asset_version('images/amal-logo-white.png') }}" alt="{{ config('app.name') }}"
+                    width="540" height="104" class="h-10 w-auto">
+                <span class="sr-only">{{ config('app.name') }}</span>
                 <p class="mt-4 text-sm leading-relaxed text-white/60">
                     {{ __('Omani fashion house celebrating heritage through contemporary design since 2006.') }}
                 </p>

@@ -24,8 +24,9 @@
                 </svg>
             </button>
 
-            <a href="/" class="whitespace-nowrap font-serif text-xl uppercase tracking-[0.05em] text-ink sm:text-3xl sm:tracking-[0.15em]">
-                {{ config('app.name') }}
+            <a href="/" aria-label="{{ config('app.name') }}" class="shrink-0">
+                <img src="{{ asset_version('images/amal-logo-ink.png') }}" alt="{{ config('app.name') }}"
+                    width="540" height="104" class="h-7 w-auto sm:h-9">
             </a>
 
             <nav class="hidden items-center gap-6 text-[11px] uppercase tracking-[0.18em] text-ink/80 xl:flex">

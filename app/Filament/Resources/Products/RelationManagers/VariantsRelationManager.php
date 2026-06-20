@@ -8,11 +8,13 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -39,6 +41,14 @@ class VariantsRelationManager extends RelationManager
                     ->dehydrateStateUsing(fn ($state) => ($state === null || $state === '') ? null : (int) round(((float) $state) * 1000)),
                 TextInput::make('stock_qty')->label('Stock')->numeric()->default(0)->required(),
                 Toggle::make('is_active')->default(true),
+                FileUpload::make('image_path')
+                    ->label('Colour photo')
+                    ->image()
+                    ->maxSize(4096)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->directory('variants')
+                    ->columnSpanFull()
+                    ->helperText('Optional. Shown on the product page when this colour is selected.'),
             ]);
     }
 
@@ -47,6 +57,7 @@ class VariantsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('sku')
             ->columns([
+                ImageColumn::make('image_path')->label('Photo'),
                 TextColumn::make('sku')->label('SKU')->searchable(),
                 TextColumn::make('label')
                     ->label('Variant')

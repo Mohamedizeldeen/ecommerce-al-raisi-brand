@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\AtelierController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PreferenceController;
+use App\Http\Controllers\PressController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
@@ -28,6 +30,12 @@ Route::get('/collections/{collection:slug}', [CollectionController::class, 'show
 Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 
 Route::get('/atelier', [AtelierController::class, 'index'])->name('atelier');
+
+// Editorial — Blog articles and Press releases (admin-managed via Filament).
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
+Route::get('/press', [PressController::class, 'index'])->name('press.index');
+Route::get('/press/{post:slug}', [PressController::class, 'show'])->name('press.show');
 
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 

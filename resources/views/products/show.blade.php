@@ -4,14 +4,21 @@
     $colors = $product->variants->filter(fn ($v) => $v->color)
         ->map(fn ($v) => ['name' => $v->color, 'hex' => $v->color_hex])
         ->unique('name')->values();
-    // Map each colour to an image: a gallery photo tagged with that colour if one
-    // exists (media custom property 'color'), otherwise a distinct gallery image so
-    // the swatch always changes the view. Upload colour-tagged photos for exact matches.
+    // Per-colour image, in priority order: (1) the variant's own uploaded photo
+    // (admin sets it on the variant), (2) a gallery photo tagged with that colour
+    // (media custom property 'color'), (3) a rotating gallery image so the swatch
+    // always changes the view.
+    $variantImageByColor = $product->variants
+        ->filter(fn ($v) => $v->color && $v->image_path)
+        ->groupBy('color')
+        ->map(fn ($group) => $group->first()->imageUrl());
     $galleryMedia = $product->getMedia('gallery');
     $colorImages = [];
     foreach ($colors as $i => $c) {
         $tagged = $galleryMedia->first(fn ($m) => strcasecmp((string) $m->getCustomProperty('color'), (string) $c['name']) === 0);
-        $colorImages[$c['name']] = $tagged?->getUrl() ?? ($gallery[$i % max(count($gallery), 1)] ?? null);
+        $colorImages[$c['name']] = $variantImageByColor[$c['name']]
+            ?? $tagged?->getUrl()
+            ?? ($gallery[$i % max(count($gallery), 1)] ?? null);
     }
     $variantData = $product->variants->map(fn ($v) => [
         'id' => $v->id,

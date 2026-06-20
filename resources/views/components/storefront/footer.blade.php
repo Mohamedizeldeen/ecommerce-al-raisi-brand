@@ -1,11 +1,12 @@
 @php
-    $social = [
-        ['label' => 'Instagram', 'url' => '#'],
-        ['label' => 'Facebook', 'url' => '#'],
-        ['label' => 'TikTok', 'url' => '#'],
-        ['label' => 'YouTube', 'url' => '#'],
-        ['label' => 'Pinterest', 'url' => '#'],
-    ];
+    // Social links come from admin Settings; only those with a real URL are shown.
+    $social = array_values(array_filter([
+        ['name' => 'instagram', 'label' => 'Instagram', 'url' => \App\Models\Setting::get('social_instagram_url')],
+        ['name' => 'facebook', 'label' => 'Facebook', 'url' => \App\Models\Setting::get('social_facebook_url')],
+        ['name' => 'tiktok', 'label' => 'TikTok', 'url' => \App\Models\Setting::get('social_tiktok_url')],
+        ['name' => 'youtube', 'label' => 'YouTube', 'url' => \App\Models\Setting::get('social_youtube_url')],
+        ['name' => 'pinterest', 'label' => 'Pinterest', 'url' => \App\Models\Setting::get('social_pinterest_url')],
+    ], fn ($s) => filled($s['url']) && $s['url'] !== '#'));
 @endphp
 
 <footer class="mt-24 bg-ink text-white">
@@ -61,11 +62,18 @@
 
         <div class="mt-14 flex flex-col gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-xs text-white/40">&copy; {{ now()->year }} {{ config('app.name') }}. {{ __('All rights reserved.') }}</p>
-            <ul class="flex flex-wrap gap-x-5 gap-y-2 text-xs uppercase tracking-[0.15em] text-white/60">
-                @foreach ($social as $item)
-                    <li><a href="{{ $item['url'] }}" class="hover:text-accent">{{ $item['label'] }}</a></li>
-                @endforeach
-            </ul>
+            @if (! empty($social))
+                <ul class="flex flex-wrap items-center gap-4 text-white/70">
+                    @foreach ($social as $item)
+                        <li>
+                            <a href="{{ $item['url'] }}" target="_blank" rel="noopener"
+                                aria-label="{{ $item['label'] }}" class="block transition hover:text-accent">
+                                <x-storefront.icon :name="$item['name']" class="h-5 w-5" />
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
     </div>
 </footer>

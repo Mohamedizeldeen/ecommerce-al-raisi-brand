@@ -5,6 +5,8 @@
         ['label' => 'Accessories', 'url' => '/category/accessories'],
         ['label' => 'Lifestyle', 'url' => '/category/lifestyle'],
         ['label' => 'The Atelier', 'url' => '/atelier'],
+        ['label' => 'Blog', 'url' => '/blog'],
+        ['label' => 'Press', 'url' => '/press'],
         ['label' => 'About', 'url' => '/about'],
         ['label' => 'Contact', 'url' => '/contact'],
     ];

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class ProductVariant extends Model
 {
@@ -43,5 +44,17 @@ class ProductVariant extends Model
     public function getInStockAttribute(): bool
     {
         return $this->is_active && $this->stock_qty > 0;
+    }
+
+    /** Uploaded photo for this colour/variant, cache-busted, or null. */
+    public function imageUrl(): ?string
+    {
+        if (! $this->image_path) {
+            return null;
+        }
+
+        return Str::startsWith($this->image_path, ['http://', 'https://'])
+            ? $this->image_path
+            : asset_version('storage/'.$this->image_path);
     }
 }

@@ -34,6 +34,19 @@ class VirtualTryOnController extends Controller
             ], 422);
         }
 
+        // Per-client (per-IP) daily cap — checked BEFORE the global budget so only
+        // clients still under their own quota spend the shared daily allowance.
+        // Same Cache::add-then-increment pattern (the DB cache store won't create
+        // a key on increment alone, which would otherwise defeat the guard).
+        $perKey = 'try_on:'.$request->ip().':'.now()->format('Y-m-d');
+        Cache::add($perKey, 0, now()->addHours(25));
+
+        if ((int) Cache::increment($perKey) > (int) config('assistant.try_on.per_client_daily', 10)) {
+            return response()->json([
+                'error' => __('Virtual try-on is unavailable right now. Please try again later.'),
+            ], 503);
+        }
+
         // Global daily budget guard (cost control) — count every accepted attempt.
         // Cache::add seeds the counter row first (the database/file stores don't
         // auto-create a key on increment, which would otherwise defeat the guard).

@@ -51,10 +51,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex min-h-screen flex-col bg-white">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-[200] focus:top-2 focus:start-2 focus:rounded focus:bg-ink focus:px-4 focus:py-2 focus:text-white">{{ __('Skip to content') }}</a>
     <x-storefront.announcement />
     <x-storefront.header />
 
-    <main class="flex-1">
+    <main id="main" tabindex="-1" class="flex-1">
         {{ $slot }}
     </main>
 

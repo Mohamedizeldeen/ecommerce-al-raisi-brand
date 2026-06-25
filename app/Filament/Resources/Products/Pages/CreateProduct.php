@@ -13,5 +13,5 @@ class CreateProduct extends CreateRecord
     protected static string $resource = ProductResource::class;
 
     /** @var list<string> */
-    protected array $arFields = ['name', 'description', 'fabric'];
+    protected array $arFields = ['name', 'description', 'fabric', 'meta_title', 'meta_description'];
 }

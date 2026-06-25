@@ -4,30 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 
-class PressController extends Controller
+class PressController extends PostController
 {
-    public function index()
+    protected function type(): string
     {
-        $posts = Post::published()->type(Post::TYPE_PRESS)
-            ->orderByRaw('published_at IS NULL, published_at DESC')
-            ->orderBy('sort_order')
-            ->orderByDesc('id')
-            ->get();
-
-        return view('press.index', compact('posts'));
+        return Post::TYPE_PRESS;
     }
 
-    public function show(Post $post)
+    protected function viewPrefix(): string
     {
-        abort_unless($post->type === Post::TYPE_PRESS, 404);
-        abort_unless($post->is_active && (is_null($post->published_at) || $post->published_at->isPast()), 404);
-
-        $related = Post::published()->type(Post::TYPE_PRESS)
-            ->whereKeyNot($post->getKey())
-            ->orderByDesc('published_at')
-            ->limit(3)
-            ->get();
-
-        return view('press.show', compact('post', 'related'));
+        return 'press';
     }
 }

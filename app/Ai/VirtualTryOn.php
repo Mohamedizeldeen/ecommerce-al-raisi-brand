@@ -37,8 +37,9 @@ class VirtualTryOn
             throw new TryOnException('failed', 'Virtual try-on is not configured yet.');
         }
 
-        $response = Http::timeout((int) config('assistant.try_on.timeout', 90))
-            ->post("{$base}/models/{$model}:generateContent?key={$key}", [
+        $response = Http::withHeaders(['x-goog-api-key' => $key])
+            ->timeout((int) config('assistant.try_on.timeout', 90))
+            ->post("{$base}/models/{$model}:generateContent", [
                 'contents' => [[
                     'parts' => [
                         ['text' => self::PROMPT],

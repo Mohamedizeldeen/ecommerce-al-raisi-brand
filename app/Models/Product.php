@@ -144,6 +144,15 @@ class Product extends Model implements HasMedia
         return $this->primaryImageUrl() ?? $this->placeholderImageUrl($offset);
     }
 
+    /**
+     * Small 'thumb' conversion URL for compact lists, falling back to the
+     * standard display image (and ultimately the placeholder) when absent.
+     */
+    public function thumbImageUrl(): string
+    {
+        return $this->getFirstMediaUrl('gallery', 'thumb') ?: $this->displayImageUrl();
+    }
+
     /** @return list<string> Product-page gallery: media, else three placeholders. */
     public function displayGalleryUrls(): array
     {

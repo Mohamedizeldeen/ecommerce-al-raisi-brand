@@ -26,6 +26,7 @@ use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -110,7 +111,15 @@ class ProductResource extends Resource
             ]),
             Section::make('SEO')->columns(2)->collapsed()->schema([
                 TextInput::make('meta_title'),
-                TextInput::make('meta_description'),
+                TextInput::make('meta_title_ar')
+                    ->label('Meta title (العربية)')
+                    ->extraInputAttributes(['dir' => 'rtl']),
+                Textarea::make('meta_description')
+                    ->rows(2),
+                Textarea::make('meta_description_ar')
+                    ->label('Meta description (العربية)')
+                    ->rows(2)
+                    ->extraInputAttributes(['dir' => 'rtl']),
             ]),
         ]);
     }
@@ -128,14 +137,13 @@ class ProductResource extends Resource
                     ->label('Price')
                     ->formatStateUsing(fn ($state) => format_omr((int) $state))
                     ->sortable(),
-                TextColumn::make('variants')
-                    ->label('Variants')
-                    ->getStateUsing(fn (Product $record) => $record->variants()->count()),
-                TextColumn::make('stock')
+                TextColumn::make('variants_count')
+                    ->label('Variants'),
+                TextColumn::make('stock_sum')
                     ->label('Stock')
                     ->badge()
-                    ->color(fn ($state) => (int) $state === 0 ? 'danger' : ((int) $state <= 5 ? 'warning' : 'success'))
-                    ->getStateUsing(fn (Product $record) => (int) $record->variants()->sum('stock_qty')),
+                    ->formatStateUsing(fn ($state) => (int) $state)
+                    ->color(fn ($state) => (int) $state === 0 ? 'danger' : ((int) $state <= 5 ? 'warning' : 'success')),
                 IconColumn::make('is_active')->label('Active')->boolean(),
                 IconColumn::make('is_featured')->label('Featured')->boolean(),
                 TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
@@ -152,6 +160,17 @@ class ProductResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        // Fold the per-row Variants/Stock aggregates into the base query so the list
+        // table reads loaded columns instead of firing 2 queries per row. Applied via
+        // getEloquentQuery (not the table's modifyQueryUsing, which Filament evaluates
+        // during getModel() against an unbound query and 500s on the relationship).
+        return parent::getEloquentQuery()
+            ->withCount('variants')
+            ->withSum('variants as stock_sum', 'stock_qty');
     }
 
     public static function getRelations(): array

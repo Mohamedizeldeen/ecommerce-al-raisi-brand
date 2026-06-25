@@ -19,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CategoryResource extends Resource
 {
@@ -42,7 +43,7 @@ class CategoryResource extends Resource
                 TextInput::make('slug')
                     ->required(),
                 Select::make('parent_id')
-                    ->relationship('parent', 'name'),
+                    ->relationship('parent', 'name', modifyQueryUsing: fn (Builder $q, ?Category $record) => $q->when($record, fn ($q) => $q->whereKeyNot($record->getKey()))),
                 Textarea::make('description')
                     ->columnSpanFull(),
                 Textarea::make('description_ar')

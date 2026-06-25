@@ -15,6 +15,10 @@ export default defineConfig({
                 bunny('Jost', {
                     weights: [300, 400, 500, 600],
                 }),
+                // Arabic UI typeface — Jost/Cormorant carry no Arabic glyphs.
+                bunny('Cairo', {
+                    weights: [400, 500, 600, 700],
+                }),
             ],
         }),
         tailwindcss(),

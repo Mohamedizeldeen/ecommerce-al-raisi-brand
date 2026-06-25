@@ -15,8 +15,9 @@
                 <div>
                     <label for="message" class="mb-1 block text-xs uppercase tracking-[0.15em] text-ink">{{ __('Message') }}</label>
                     <textarea id="message" name="message" rows="5" required
+                        @error('message') aria-invalid="true" aria-describedby="message-error" @enderror
                         class="w-full border px-3 py-2 text-sm focus:outline-none {{ $errors->has('message') ? 'border-red-400' : 'border-stone-soft focus:border-accent' }}">{{ old('message') }}</textarea>
-                    @error('message')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    @error('message')<p id="message-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
                 @if (config('services.hcaptcha.sitekey'))
@@ -60,7 +61,7 @@
             </div>
             <a href="https://maps.app.goo.gl/gDZwEe8qRH3qmCBy9" target="_blank" rel="noopener"
                 class="mt-3 inline-flex items-center gap-1 text-xs uppercase tracking-[0.18em] text-accent link-underline">
-                {{ __('Open in Google Maps') }} &rarr;
+                {{ __('Open in Google Maps') }} <span class="inline-block rtl:-scale-x-100" aria-hidden="true">&rarr;</span>
             </a>
         </div>
     </section>

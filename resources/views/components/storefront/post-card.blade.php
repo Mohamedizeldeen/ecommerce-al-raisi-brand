@@ -3,7 +3,7 @@
 <a href="{{ route($route, $post) }}" class="group block">
     <div class="aspect-[4/3] overflow-hidden bg-sand">
         @if ($cover)
-            <img src="{{ $cover }}" alt="{{ $post->title }}"
+            <img src="{{ $cover }}" alt="{{ $post->title }}" loading="lazy"
                 class="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
         @else
             <div class="flex h-full w-full items-center justify-center text-stone-300">
@@ -21,6 +21,6 @@
         @if ($post->summary(120))
             <p class="mt-2 text-sm leading-relaxed text-stone-600">{{ $post->summary(120) }}</p>
         @endif
-        <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.18em] text-accent link-underline">{{ __('Read more') }} &rarr;</span>
+        <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.18em] text-accent link-underline">{{ __('Read more') }} <span class="inline-block rtl:-scale-x-100" aria-hidden="true">&rarr;</span></span>
     </div>
 </a>

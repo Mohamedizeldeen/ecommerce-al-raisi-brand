@@ -13,7 +13,7 @@
                     @foreach ($items as $item)
                         <div class="flex gap-4 py-6">
                             <a href="{{ route('products.show', $item->variant->product) }}" class="h-28 w-24 flex-shrink-0 overflow-hidden bg-sand">
-                                <img src="{{ $item->variant->product->displayImageUrl() }}" alt="" class="h-full w-full object-cover">
+                                <img src="{{ $item->variant->product->thumbImageUrl() }}" alt="" class="h-full w-full object-cover">
                             </a>
                             <div class="flex-1">
                                 <div class="flex justify-between gap-4">

@@ -65,7 +65,7 @@ class AssistantController extends Controller
             $phone = config('assistant.fallback_phone');
 
             return response()->json([
-                'reply' => "عذرًا، حدث خلل مؤقت. تواصل معنا على {$phone}.\n"
+                'reply' => "عذراً، حدث خلل مؤقت. يُرجى التواصل معنا على {$phone}.\n"
                     ."Sorry, something went wrong. Please contact us on {$phone}.",
             ]);
         }

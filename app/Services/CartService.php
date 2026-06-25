@@ -152,6 +152,43 @@ class CartService
         $item->delete();
     }
 
+    /**
+     * Reconcile the cart against live stock before display/checkout: remove items
+     * whose variant is missing, inactive or out of stock, and clamp any quantity
+     * that now exceeds available stock. Returns true if the cart was modified.
+     *
+     * Keeps the cart view, the totals and checkout consistent; prevents a sold-out
+     * item from deadlocking checkout (it was excluded from the total but blocked
+     * order creation with no way to remove it); and guards the views — which read
+     * $item->variant->... directly — against a removed variant.
+     */
+    public function reconcile(): bool
+    {
+        $cart = $this->current();
+        $cart->loadMissing('items.variant');
+        $changed = false;
+
+        foreach ($cart->items as $item) {
+            if (! $item->variant || ! $item->variant->in_stock) {
+                $item->delete();
+                $changed = true;
+
+                continue;
+            }
+
+            if ($item->quantity > $item->variant->stock_qty) {
+                $item->update(['quantity' => (int) $item->variant->stock_qty]);
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $cart->load('items.variant.product');
+        }
+
+        return $changed;
+    }
+
     public function applyCoupon(string $code): bool
     {
         $cart = $this->current();
@@ -284,8 +321,8 @@ class CartService
             return 0;
         }
 
-        $threshold = (int) Setting::get('free_shipping_threshold_baisa', 0);
-        $flat = (int) Setting::get('shipping_flat_baisa', 0);
+        $threshold = (int) Setting::get('free_shipping_threshold_baisa', 100000);
+        $flat = (int) Setting::get('shipping_flat_baisa', 2000);
 
         if ($threshold > 0 && $payable >= $threshold) {
             return 0;

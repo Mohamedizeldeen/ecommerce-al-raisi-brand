@@ -7,7 +7,7 @@
     'moreLabel',
 ])
 <article class="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-    <a href="{{ route($indexRoute) }}" class="text-xs uppercase tracking-[0.18em] text-accent link-underline">&larr; {{ $backLabel }}</a>
+    <a href="{{ route($indexRoute) }}" class="text-xs uppercase tracking-[0.18em] text-accent link-underline"><span class="inline-block rtl:-scale-x-100" aria-hidden="true">&larr;</span> {{ $backLabel }}</a>
 
     <header class="mt-6 text-center">
         @if ($post->published_at)

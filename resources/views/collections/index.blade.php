@@ -14,7 +14,7 @@
                             style="transition-delay: {{ ($loop->index % 3) * 100 }}ms">
                             <a href="{{ route('collections.show', $collection) }}"
                                 class="group relative block aspect-[3/2] overflow-hidden bg-stone-soft">
-                                <img src="{{ $collection->coverImageUrl($loop->index) }}" alt="{{ $collection->name }}"
+                                <img src="{{ $collection->coverImageUrl($loop->index) }}" alt="{{ $collection->name }}" loading="lazy"
                                     class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                                 <div class="absolute inset-0 bg-ink/40 transition duration-500 group-hover:bg-ink/55"></div>
                                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center text-white">
@@ -30,7 +30,7 @@
                                 </p>
                                 <a href="{{ route('collections.show', $collection) }}"
                                     class="mt-2 inline-block text-xs uppercase tracking-[0.2em] text-accent transition hover:text-accent-dark">
-                                    {{ __('Discover the story →') }}
+                                    {{ __('Discover the story') }} <span class="inline-block rtl:-scale-x-100" aria-hidden="true">→</span>
                                 </a>
                             </div>
                         </div>

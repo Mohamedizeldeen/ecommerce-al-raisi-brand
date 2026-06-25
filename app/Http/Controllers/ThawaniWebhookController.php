@@ -22,12 +22,14 @@ class ThawaniWebhookController extends Controller
      */
     public function __invoke(Request $request)
     {
-        // Authenticate the webhook: when a secret is configured, the request must
-        // carry it via ?secret= query or the Thawani-Webhook-Secret header.
+        // Authenticate the webhook when a secret is configured. Prefer the
+        // Thawani-Webhook-Secret header (kept out of web-server access logs); fall
+        // back to the ?secret= query param only for Thawani setups that can't send a
+        // custom header. The body is re-verified against Thawani regardless.
         $webhookSecret = (string) config('services.thawani.webhook_secret');
 
         if ($webhookSecret !== '') {
-            $provided = (string) ($request->query('secret') ?? $request->header('Thawani-Webhook-Secret'));
+            $provided = (string) ($request->header('Thawani-Webhook-Secret') ?: $request->query('secret', ''));
 
             abort_unless(hash_equals($webhookSecret, $provided), 403);
         }

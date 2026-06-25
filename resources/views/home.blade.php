@@ -25,7 +25,7 @@
                 <a href="{{ route('collections.index') }}"
                     class="group inline-flex items-center gap-3 bg-white px-9 py-4 text-xs uppercase tracking-[0.25em] text-ink transition hover:bg-accent hover:text-white">
                     {{ __('Shop Collections') }}
-                    <span class="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
+                    <span class="transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1"><span class="inline-block rtl:-scale-x-100" aria-hidden="true">&rarr;</span></span>
                 </a>
             </div>
         </div>
@@ -49,13 +49,13 @@
                     <a href="{{ route('collections.show', $collection) }}" x-data
                         class="reveal group relative block aspect-[3/4] overflow-hidden bg-stone-soft"
                         x-intersect.once="$el.classList.add('is-visible')" style="transition-delay: {{ $loop->index * 120 }}ms">
-                        <img src="{{ $collection->coverImageUrl($loop->index) }}" alt="{{ $collection->name }}"
+                        <img src="{{ $collection->coverImageUrl($loop->index) }}" alt="{{ $collection->name }}" loading="lazy"
                             class="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                         <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"></div>
                         <div class="absolute inset-x-0 bottom-0 p-6 text-center text-white">
                             <p class="text-xs uppercase tracking-[0.25em] text-white/80">{{ $collection->season ?? __($collection->type->getLabel()) }}</p>
                             <h3 class="mt-2 font-serif text-3xl">{{ $collection->name }}</h3>
-                            <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.2em] opacity-0 transition duration-500 group-hover:opacity-100">{{ __('Explore') }} &rarr;</span>
+                            <span class="mt-3 inline-block text-[11px] uppercase tracking-[0.2em] opacity-0 transition duration-500 group-hover:opacity-100">{{ __('Explore') }} <span class="inline-block rtl:-scale-x-100" aria-hidden="true">&rarr;</span></span>
                         </div>
                     </a>
                 @endforeach

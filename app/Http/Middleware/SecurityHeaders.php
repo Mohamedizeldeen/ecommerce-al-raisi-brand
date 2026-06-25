@@ -27,12 +27,12 @@ class SecurityHeaders
         if (! app()->environment('local') && ! $response->headers->has('Content-Security-Policy')) {
             $response->headers->set('Content-Security-Policy', implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-                "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.hcaptcha.com https://*.hcaptcha.com",
+                "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://*.hcaptcha.com",
                 "font-src 'self' https://fonts.bunny.net data:",
                 "img-src 'self' data: https:",
-                "connect-src 'self'",
-                "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://maps.google.com",
+                "connect-src 'self' https://*.hcaptcha.com https://hcaptcha.com",
+                "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://maps.google.com https://*.hcaptcha.com https://hcaptcha.com",
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",

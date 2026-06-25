@@ -20,7 +20,7 @@
     :class="scrolled ? 'bg-white/85 shadow-[0_1px_0_rgba(22,19,15,0.08)] backdrop-blur-md' : 'bg-white'">
     <div class="mx-auto max-w-7xl px-3 sm:px-6">
         <div class="flex h-20 items-center justify-between gap-3 sm:gap-4">
-            <button @click="open = ! open" class="-ml-2 p-2 text-ink xl:hidden" aria-label="{{ __('Toggle menu') }}">
+            <button @click="open = ! open" :aria-expanded="open" aria-controls="mobile-menu" class="-ml-2 p-2 text-ink xl:hidden" aria-label="{{ __('Toggle menu') }}">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
                 </svg>
@@ -57,13 +57,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
                     </svg>
                     <span x-show="$store.cart.count > 0" x-cloak x-text="$store.cart.count"
-                        class="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[10px] font-medium text-white"></span>
+                        class="absolute -end-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[10px] font-medium text-white"></span>
                 </a>
             </div>
         </div>
     </div>
 
-    <div x-show="open" x-cloak x-transition.origin.top.duration.300ms class="border-t border-stone-soft bg-white xl:hidden">
+    <div x-show="open" x-cloak id="mobile-menu" x-transition.origin.top.duration.300ms class="border-t border-stone-soft bg-white xl:hidden">
         <nav class="flex flex-col px-4 py-3 text-sm uppercase tracking-[0.15em] text-ink/80">
             @foreach ($nav as $item)
                 <a href="{{ $item['url'] }}" @if ($isActive($item['url'])) aria-current="page" @endif
@@ -85,7 +85,7 @@
             @endforeach
             <form method="POST" action="{{ route('preferences.update') }}" class="ms-auto">
                 @csrf
-                <select name="currency" onchange="this.form.submit()"
+                <select name="currency" onchange="this.form.submit()" aria-label="{{ __('Currency') }}"
                     class="border border-stone-soft bg-sand/40 px-2 py-1.5 text-xs text-ink focus:border-accent focus:outline-none">
                     @foreach (config('regions.currencies') as $code => $cur)
                         <option value="{{ $code }}" @selected(\App\Support\Money::currentCurrency() === $code)>{{ $code }}</option>

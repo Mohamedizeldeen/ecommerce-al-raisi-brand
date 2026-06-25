@@ -8,7 +8,7 @@
             @foreach (request()->except(['sort', 'page']) as $key => $value)
                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
             @endforeach
-            <select name="sort" onchange="this.form.submit()"
+            <select name="sort" onchange="this.form.submit()" aria-label="{{ __('Sort products') }}"
                 class="border border-stone-soft bg-white px-3 py-2 text-xs uppercase tracking-[0.12em] focus:border-accent focus:outline-none">
                 <option value="newest" @selected(! request('sort') || request('sort') === 'newest')>{{ __('Newest') }}</option>
                 <option value="price_asc" @selected(request('sort') === 'price_asc')>{{ __('Price: Low to High') }}</option>

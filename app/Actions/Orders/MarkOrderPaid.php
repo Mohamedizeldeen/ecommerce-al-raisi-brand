@@ -8,6 +8,7 @@ use App\Events\OrderPaid;
 use App\Models\Coupon;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MarkOrderPaid
 {
@@ -34,15 +35,29 @@ class MarkOrderPaid
                 'paid_at' => now(),
             ]);
 
+            $shortfalls = [];
+
             foreach ($fresh->items()->with('variant')->get() as $item) {
                 $variant = $item->variant;
 
-                if ($variant) {
-                    $decrement = min($item->quantity, $variant->stock_qty);
+                if (! $variant) {
+                    continue;
+                }
 
-                    if ($decrement > 0) {
-                        $variant->decrement('stock_qty', $decrement);
-                    }
+                $available = (int) $variant->stock_qty;
+                $decrement = min((int) $item->quantity, $available);
+
+                if ($decrement > 0) {
+                    $variant->decrement('stock_qty', $decrement);
+                }
+
+                // Stock fell below the ordered quantity between checkout and payment
+                // (a concurrent order or an admin edit). We still charge the full order,
+                // so flag the shortfall for staff to reconcile instead of silently
+                // absorbing it (min() above already prevents negative stock).
+                if ((int) $item->quantity > $available) {
+                    $shortfalls[] = trim($item->name.' '.$item->variant_label)
+                        .' (ordered '.(int) $item->quantity.', had '.$available.')';
                 }
             }
 
@@ -59,6 +74,19 @@ class MarkOrderPaid
                 'to_status' => PaymentStatus::Paid->value,
                 'note' => 'Payment confirmed via Thawani.',
             ]);
+
+            if ($shortfalls !== []) {
+                $fresh->statusHistories()->create([
+                    'from_status' => PaymentStatus::Paid->value,
+                    'to_status' => PaymentStatus::Paid->value,
+                    'note' => 'Stock shortfall at payment — fulfil manually: '.implode('; ', $shortfalls),
+                ]);
+
+                Log::warning('Order oversold at payment confirmation', [
+                    'order_number' => $fresh->order_number,
+                    'shortfalls' => $shortfalls,
+                ]);
+            }
 
             return true;
         });

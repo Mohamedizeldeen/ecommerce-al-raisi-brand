@@ -110,9 +110,10 @@
                     <div class="mt-8">
                         <p class="text-xs uppercase tracking-[0.18em] text-ink">{{ __('Colour:') }}
                             <span class="text-stone-500" x-text="color || 'Select'"></span></p>
-                        <div class="mt-3 flex flex-wrap gap-3">
+                        <div class="mt-3 flex flex-wrap gap-3" role="group" aria-label="{{ __('Colour') }}">
                             @foreach ($colors as $c)
-                                <button type="button" title="{{ $c['name'] }}"
+                                <button type="button" title="{{ $c['name'] }}" aria-label="{{ $c['name'] }}"
+                                    :aria-pressed="color === @js($c['name'])"
                                     @click="color = @js($c['name'])"
                                     class="h-9 w-9 rounded-full border transition"
                                     :class="color === @js($c['name']) ? 'ring-2 ring-ink ring-offset-2' : 'border-stone-soft'"
@@ -132,6 +133,7 @@
                         <div class="mt-3 flex flex-wrap gap-2">
                             @foreach ($sizes as $s)
                                 <button type="button" @click="size = @js($s)"
+                                    :aria-pressed="size === @js($s)"
                                     class="min-w-12 border px-4 py-2 text-sm transition"
                                     :class="size === @js($s) ? 'border-ink bg-ink text-white' : 'border-stone-soft hover:border-ink'">{{ $s }}</button>
                             @endforeach
@@ -146,7 +148,7 @@
                     <input type="hidden" name="variant_id" :value="current?.id">
                     <input type="hidden" name="quantity" value="1">
 
-                    <p class="mb-3 text-sm" x-cloak>
+                    <p class="mb-3 text-sm" x-cloak role="status" aria-live="polite">
                         <span x-show="current && current.stock > 3" class="text-green-700">{{ __('In stock') }}</span>
                         <span x-show="current && current.stock > 0 && current.stock <= 3" class="text-accent">{{ __('Low stock — only') }} <span x-text="current?.stock"></span> {{ __('left') }}</span>
                         <span x-show="current && current.stock < 1" class="text-red-600">{{ __('Sold out') }}</span>
@@ -180,6 +182,8 @@
                             x-transition:enter-start="translate-y-4 opacity-0 sm:scale-95"
                             x-transition:enter-end="translate-y-0 opacity-100 sm:scale-100"
                             @keydown.escape.window="open = false"
+                            x-trap.noscroll="open"
+                            role="dialog" aria-modal="true" aria-label="{{ __('Virtual Try-On') }}"
                             class="fixed left-1/2 top-1/2 z-[120] flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
                             <header class="flex items-center justify-between border-b border-stone-soft px-5 py-4">
                                 <div>

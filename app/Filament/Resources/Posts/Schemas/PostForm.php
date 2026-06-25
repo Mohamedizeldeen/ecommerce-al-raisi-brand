@@ -69,6 +69,9 @@ class PostForm
                             ->image()
                             ->maxSize(4096)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->imageResizeMode('contain')
+                            ->imageResizeTargetWidth('1920')
+                            ->imageResizeTargetHeight('1920')
                             ->directory('posts')
                             ->helperText('Used as the article header and the social/link preview image.'),
                     ]),

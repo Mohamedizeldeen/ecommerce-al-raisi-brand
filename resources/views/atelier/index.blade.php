@@ -25,7 +25,7 @@
                         </div>
                     @else
                         <div class="aspect-[4/3] overflow-hidden bg-stone-soft">
-                            <img src="{{ $showcase->coverImageUrl($i) }}" alt="{{ $showcase->title }}"
+                            <img src="{{ $showcase->coverImageUrl($i) }}" alt="{{ $showcase->title }}" loading="lazy"
                                 class="h-full w-full object-cover">
                         </div>
                     @endif

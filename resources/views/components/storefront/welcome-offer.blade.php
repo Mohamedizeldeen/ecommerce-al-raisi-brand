@@ -13,6 +13,8 @@
         x-transition:enter-start="translate-y-4 opacity-0 sm:scale-95"
         x-transition:enter-end="translate-y-0 opacity-100 sm:scale-100"
         @keydown.escape.window="dismiss()"
+        x-trap.noscroll="show"
+        role="dialog" aria-modal="true" aria-label="{{ $percent }}% {{ __('off your first order') }}"
         class="fixed left-1/2 top-1/2 z-[120] w-[calc(100vw-2.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-8 text-center shadow-2xl sm:p-10">
         <button @click="dismiss()" aria-label="{{ __('Close') }}"
             class="absolute right-4 top-4 text-stone-400 transition hover:text-ink">
@@ -29,7 +31,7 @@
 
         <form method="POST" action="{{ route('newsletter.subscribe') }}" @submit="markSeen()" class="mt-6 flex">
             @csrf
-            <input type="email" name="email" required placeholder="{{ __('Email address') }}" autocomplete="email"
+            <input type="email" name="email" required placeholder="{{ __('Email address') }}" aria-label="{{ __('Email address') }}" autocomplete="email"
                 class="w-full min-w-0 border border-stone-soft bg-sand/40 px-4 py-3 text-sm text-ink placeholder-stone-400 focus:border-accent focus:outline-none">
             <button type="submit"
                 class="shrink-0 bg-ink px-5 text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent">

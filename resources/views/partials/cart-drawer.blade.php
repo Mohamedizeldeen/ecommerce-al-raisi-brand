@@ -9,7 +9,7 @@
             @foreach ($items as $item)
                 <li class="flex gap-4 py-5">
                     <a href="{{ route('products.show', $item->variant->product) }}" class="h-24 w-20 flex-shrink-0 overflow-hidden bg-sand">
-                        <img src="{{ $item->variant->product->displayImageUrl() }}" alt="" class="h-full w-full object-cover">
+                        <img src="{{ $item->variant->product->thumbImageUrl() }}" alt="" class="h-full w-full object-cover">
                     </a>
                     <div class="flex flex-1 flex-col">
                         <div class="flex justify-between gap-2 text-sm">

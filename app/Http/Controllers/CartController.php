@@ -13,6 +13,13 @@ class CartController extends Controller
 
     public function index()
     {
+        // Self-heal the bag against live stock (drop sold-out items, clamp quantities).
+        // On a change, redirect so the standard flash shows and the view re-renders clean.
+        if ($this->cart->reconcile()) {
+            return redirect()->route('cart.index')
+                ->with('error', __('Your bag was updated to reflect current availability — please review it before checking out.'));
+        }
+
         $cart = $this->cart->current();
         $cart->load(['items.variant.product.media']);
 
@@ -28,6 +35,8 @@ class CartController extends Controller
      */
     public function drawer()
     {
+        $this->cart->reconcile();
+
         $cart = $this->cart->current();
         $cart->load(['items.variant.product.media']);
 

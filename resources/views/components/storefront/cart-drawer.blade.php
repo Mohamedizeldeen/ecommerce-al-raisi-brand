@@ -14,6 +14,8 @@
         x-transition:leave-start="translate-x-0"
         x-transition:leave-end="{{ $offscreen }}"
         @keydown.escape.window="$store.cart.close()"
+        x-trap.noscroll="$store.cart.open"
+        role="dialog" aria-modal="true" aria-label="{{ __('Your Bag') }}"
         class="fixed inset-y-0 end-0 z-[90] flex w-full max-w-md flex-col bg-white shadow-2xl">
 
         <header class="flex items-center justify-between border-b border-stone-soft px-6 py-5">

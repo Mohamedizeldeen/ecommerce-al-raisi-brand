@@ -37,7 +37,8 @@ class CouponResource extends Resource
         return $schema
             ->components([
                 TextInput::make('code')
-                    ->required(),
+                    ->required()
+                    ->unique(ignoreRecord: true),
                 Select::make('type')
                     ->options(CouponType::class)
                     ->default('percent')
@@ -87,10 +88,11 @@ class CouponResource extends Resource
                     ->badge()
                     ->searchable(),
                 TextColumn::make('value')
-                    ->numeric()
+                    ->formatStateUsing(fn ($state, Coupon $record) => $record->type === CouponType::Fixed ? format_omr((int) $state) : $state.'%')
                     ->sortable(),
                 TextColumn::make('min_total_baisa')
-                    ->numeric()
+                    ->label('Minimum order')
+                    ->formatStateUsing(fn ($state) => format_omr((int) $state))
                     ->sortable(),
                 TextColumn::make('starts_at')
                     ->dateTime()

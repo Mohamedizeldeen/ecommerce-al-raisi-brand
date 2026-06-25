@@ -60,7 +60,10 @@ class CollectionResource extends Resource
                 FileUpload::make('cover_image')
                     ->image()
                     ->maxSize(4096)
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->imageResizeMode('contain')
+                    ->imageResizeTargetWidth('1920')
+                    ->imageResizeTargetHeight('1920'),
                 TextInput::make('sort_order')
                     ->required()
                     ->numeric()

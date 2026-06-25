@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\CouponType;
+use App\Models\Coupon;
 use App\Models\Setting;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
@@ -115,7 +117,26 @@ class ManageSettings extends Page
 
         Setting::put('free_shipping_threshold_baisa', (int) round(((float) ($data['free_shipping_threshold_omr'] ?? 0)) * 1000));
         Setting::put('shipping_flat_baisa', (int) round(((float) ($data['shipping_flat_omr'] ?? 0)) * 1000));
-        Setting::put('newsletter_discount_percent', (int) ($data['newsletter_discount_percent'] ?? 0));
+        $percent = (int) ($data['newsletter_discount_percent'] ?? 0);
+        Setting::put('newsletter_discount_percent', $percent);
+
+        // Keep the advertised welcome code in sync with a real coupon. The storefront
+        // shows "WELCOME{percent}" everywhere, so ensure that exact code exists and is a
+        // valid percent coupon — otherwise changing the percentage would advertise a code
+        // that applyCoupon() rejects. Existing customisation (usage limits, dates) is
+        // preserved; only a freshly created code gets a zero minimum.
+        if ($percent > 0) {
+            $coupon = Coupon::firstOrNew(['code' => 'WELCOME'.$percent]);
+            $coupon->type = CouponType::Percent;
+            $coupon->value = $percent;
+            $coupon->is_active = true;
+
+            if (! $coupon->exists) {
+                $coupon->min_total_baisa = 0;
+            }
+
+            $coupon->save();
+        }
 
         Notification::make()->title('Settings saved')->success()->send();
     }

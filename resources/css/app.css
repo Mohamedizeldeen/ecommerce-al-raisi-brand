@@ -17,6 +17,15 @@
     --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Arabic typography: Cormorant Garamond and Jost carry no Arabic glyphs, so the
+   RTL/Arabic UI uses Cairo (self-hosted via Bunny) for both body and headings.
+   Tailwind's font-sans/font-serif utilities resolve var(--font-*), so overriding
+   these variables on the RTL root cascades to every element. */
+[dir='rtl'] {
+    --font-sans: 'Cairo', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Cairo', ui-serif, Georgia, serif;
+}
+
 @layer base {
     html {
         scroll-behavior: smooth;
@@ -82,6 +91,15 @@
     animation-play-state: paused;
 }
 
+[dir="rtl"] .animate-marquee {
+    animation-name: marquee-rtl;
+}
+
+@keyframes marquee-rtl {
+    from { transform: translateX(0); }
+    to { transform: translateX(50%); }
+}
+
 @keyframes fade-up {
     from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: none; }
@@ -112,6 +130,13 @@
 /* Respect users who prefer reduced motion: kill the looping/entrance animations
    and reveal transitions, showing all content immediately with no transform. */
 @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
     .animate-marquee,
     .animate-scroll-cue,
     .animate-fade-up,

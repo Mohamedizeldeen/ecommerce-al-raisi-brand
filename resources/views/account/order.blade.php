@@ -1,6 +1,6 @@
 <x-layouts.storefront :title="__('Order').' '.$order->order_number">
     <section class="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <a href="{{ route('account.orders') }}" class="text-xs uppercase tracking-[0.15em] text-accent hover:underline">&larr; {{ __('Back to orders') }}</a>
+        <a href="{{ route('account.orders') }}" class="text-xs uppercase tracking-[0.15em] text-accent hover:underline"><span class="inline-block rtl:-scale-x-100" aria-hidden="true">&larr;</span> {{ __('Back to orders') }}</a>
 
         <div class="mt-4 flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-3xl text-ink">{{ __('Order') }} {{ $order->order_number }}</h1>

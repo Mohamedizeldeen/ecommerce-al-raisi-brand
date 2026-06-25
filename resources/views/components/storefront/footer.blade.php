@@ -48,7 +48,7 @@
                 <p class="mt-4 text-sm text-white/70">{{ __('Subscribe for 10% off your first order.') }}</p>
                 <form action="/newsletter" method="POST" class="mt-4 flex">
                     @csrf
-                    <input type="email" name="email" required placeholder="{{ __('Email address') }}"
+                    <input type="email" name="email" required placeholder="{{ __('Email address') }}" aria-label="{{ __('Email address') }}"
                         class="w-full bg-transparent border border-white/30 px-3 py-2 text-sm placeholder-white/40 focus:border-accent focus:outline-none">
                     <button type="submit" class="border border-l-0 border-white/30 px-4 text-xs uppercase tracking-widest hover:bg-accent hover:border-accent transition">{{ __('Join') }}</button>
                 </form>

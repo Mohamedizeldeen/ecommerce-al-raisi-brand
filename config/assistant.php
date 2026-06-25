@@ -43,5 +43,7 @@ return [
         'timeout' => (int) env('TRY_ON_TIMEOUT', 90),
         // Global cap on AI try-on generations per calendar day (cost guard).
         'daily_limit' => (int) env('TRY_ON_DAILY_LIMIT', 200),
+        // Per-client (per-IP) cap on AI try-on generations per calendar day.
+        'per_client_daily' => (int) env('TRY_ON_PER_CLIENT_DAILY', 10),
     ],
 ];

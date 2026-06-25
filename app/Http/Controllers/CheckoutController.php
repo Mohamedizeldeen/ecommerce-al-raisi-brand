@@ -24,11 +24,16 @@ class CheckoutController extends Controller
 
     public function index()
     {
+        if ($this->cart->reconcile()) {
+            return redirect()->route('cart.index')
+                ->with('error', __('Your bag was updated to reflect current availability — please review it before checking out.'));
+        }
+
         $cart = $this->cart->current();
         $cart->load(['items.variant.product']);
 
         if ($cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your bag is empty.');
+            return redirect()->route('cart.index')->with('error', __('Your bag is empty.'));
         }
 
         return view('checkout.index', [
@@ -50,11 +55,20 @@ class CheckoutController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        // Self-heal against live stock before charging. If the bag changed (an item
+        // sold out, or a quantity was clamped) send the customer back to review it
+        // rather than charging for something they didn't confirm — this also breaks
+        // the old deadlock where a sold-out item neither paid nor was ever removed.
+        if ($this->cart->reconcile()) {
+            return redirect()->route('cart.index')
+                ->with('error', __('Your bag was updated to reflect current availability — please review it before checking out.'));
+        }
+
         $cart = $this->cart->current();
         $cart->load(['items.variant.product']);
 
         if ($cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your bag is empty.');
+            return redirect()->route('cart.index')->with('error', __('Your bag is empty.'));
         }
 
         $summary = $this->cart->summary();

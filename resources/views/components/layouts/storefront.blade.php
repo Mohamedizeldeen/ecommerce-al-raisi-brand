@@ -63,7 +63,6 @@
 
     <x-storefront.toasts />
     <x-storefront.cart-drawer />
-    <x-storefront.age-gate />
     <x-storefront.assistant />
     <x-storefront.cookie-consent />
     <x-storefront.welcome-offer />

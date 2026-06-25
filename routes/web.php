@@ -99,10 +99,6 @@ Route::post('/assistant/chat', [AssistantController::class, 'chat'])
     ->middleware('throttle:20,1')
     ->name('assistant.chat');
 
-Route::post('/age-verify', function () {
-    return back()->withCookie(cookie('age_verified', '1', 60 * 24 * 365));
-})->name('age.verify');
-
 Route::get('/sitemap.xml', SitemapController::class);
 
 Route::get('/order/{order:order_number}', [OrderController::class, 'show'])->name('orders.show');

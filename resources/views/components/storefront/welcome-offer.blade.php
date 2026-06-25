@@ -14,7 +14,7 @@
         x-transition:enter-end="translate-y-0 opacity-100 sm:scale-100"
         @keydown.escape.window="dismiss()"
         x-trap.noscroll="show"
-        role="dialog" aria-modal="true" aria-label="{{ $percent }}% {{ __('off your first order') }}"
+        role="dialog" aria-modal="true" aria-label="{{ __('Enjoy :percent% Off Your Next Order', ['percent' => $percent]) }}"
         class="fixed left-1/2 top-1/2 z-[120] w-[calc(100vw-2.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-8 text-center shadow-2xl sm:p-10">
         <button @click="dismiss()" aria-label="{{ __('Close') }}"
             class="absolute right-4 top-4 text-stone-400 transition hover:text-ink">
@@ -24,9 +24,9 @@
         </button>
 
         <p class="text-xs uppercase tracking-[0.3em] text-accent">{{ config('app.name') }}</p>
-        <h2 class="mt-3 font-serif text-3xl text-ink sm:text-4xl">{{ $percent }}% {{ __('off your first order') }}</h2>
+        <h2 class="mt-3 font-serif text-3xl text-ink sm:text-4xl">{{ __('Enjoy :percent% Off Your Next Order', ['percent' => $percent]) }}</h2>
         <p class="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-stone-600">
-            {{ __('Join our list for early access to new collections — and enjoy :percent% off your first purchase.', ['percent' => $percent]) }}
+            {{ __('Join our mailing list to stay connected while we’re away and be the first to hear about our reopening, new collections, and exclusive updates.') }}
         </p>
 
         <form method="POST" action="{{ route('newsletter.subscribe') }}" @submit="markSeen()" class="mt-6 flex">
@@ -35,7 +35,7 @@
                 class="w-full min-w-0 border border-stone-soft bg-sand/40 px-4 py-3 text-sm text-ink placeholder-stone-400 focus:border-accent focus:outline-none">
             <button type="submit"
                 class="shrink-0 bg-ink px-5 text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent">
-                {{ __('Get code') }}
+                {{ __('Get My Code') }}
             </button>
         </form>
 

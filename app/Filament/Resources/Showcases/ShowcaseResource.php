@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Showcases;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Showcases\Pages\CreateShowcase;
 use App\Filament\Resources\Showcases\Pages\EditShowcase;
 use App\Filament\Resources\Showcases\Pages\ListShowcases;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ShowcaseResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Showcase::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Blog;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Blog\Pages\CreateBlogPost;
 use App\Filament\Resources\Blog\Pages\EditBlogPost;
 use App\Filament\Resources\Blog\Pages\ListBlogPosts;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class BlogResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Post::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;

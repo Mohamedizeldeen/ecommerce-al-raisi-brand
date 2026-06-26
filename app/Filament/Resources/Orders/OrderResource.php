@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders;
 
 use App\Actions\Orders\MarkOrderPaid;
+use App\Actions\Orders\ReleaseOrderStock;
 use App\Actions\Orders\RestockOrder;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
@@ -11,6 +12,7 @@ use App\Filament\Resources\Orders\Pages\EditOrder;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\RelationManagers\ItemsRelationManager;
 use App\Filament\Resources\Orders\RelationManagers\StatusHistoryRelationManager;
+use App\Mail\OrderStatusUpdateMail;
 use App\Models\Order;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -18,6 +20,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ExportBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -27,7 +31,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Mail;
 
 class OrderResource extends Resource
 {
@@ -62,6 +68,18 @@ class OrderResource extends Resource
             'to_status' => $to->value,
             'note' => $note.' by '.(auth()->user()?->name ?? 'admin').'.',
         ]);
+    }
+
+    /** Queue a customer-facing status email ($headline/$body are translation keys). */
+    protected static function notifyCustomer(Order $order, string $headline, string $body, bool $showTracking = false): void
+    {
+        if (! $order->customer_email) {
+            return;
+        }
+
+        Mail::to($order->customer_email)->queue(
+            new OrderStatusUpdateMail($order->refresh(), $headline, $body, $showTracking)
+        );
     }
 
     public static function form(Schema $schema): Schema
@@ -118,6 +136,7 @@ class OrderResource extends Resource
                     ->options(fn () => collect(PaymentStatus::cases())->mapWithKeys(fn ($c) => [$c->value => $c->getLabel()])->all()),
                 SelectFilter::make('status')
                     ->options(fn () => collect(OrderStatus::cases())->mapWithKeys(fn ($c) => [$c->value => $c->getLabel()])->all()),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 Action::make('markPaid')
@@ -130,9 +149,20 @@ class OrderResource extends Resource
                 Action::make('ship')
                     ->label('Ship')->icon('heroicon-o-truck')->color('warning')
                     ->visible(fn (Order $r) => $r->status === OrderStatus::Processing)
-                    ->requiresConfirmation()
-                    ->action(fn (Order $r) => static::transition($r, OrderStatus::Shipped, 'Marked shipped'))
-                    ->successNotificationTitle('Order marked as shipped'),
+                    ->schema([
+                        TextInput::make('carrier')->label('Carrier')->maxLength(120),
+                        TextInput::make('tracking_number')->label('Tracking number')->maxLength(120),
+                    ])
+                    ->action(function (Order $r, array $data) {
+                        $r->update([
+                            'carrier' => $data['carrier'] ?? null,
+                            'tracking_number' => $data['tracking_number'] ?? null,
+                            'shipped_at' => now(),
+                        ]);
+                        static::transition($r, OrderStatus::Shipped, 'Marked shipped');
+                        static::notifyCustomer($r, 'Your order has shipped', 'Good news — your order is on its way.', showTracking: true);
+                    })
+                    ->successNotificationTitle('Order marked as shipped — customer notified'),
                 Action::make('complete')
                     ->label('Complete')->icon('heroicon-o-check-circle')->color('success')
                     ->visible(fn (Order $r) => $r->status === OrderStatus::Shipped)
@@ -140,24 +170,44 @@ class OrderResource extends Resource
                     ->action(fn (Order $r) => static::transition($r, OrderStatus::Completed, 'Marked completed'))
                     ->successNotificationTitle('Order completed'),
                 Action::make('refund')
-                    ->label('Refund')->icon('heroicon-o-arrow-uturn-left')->color('danger')
-                    ->visible(fn (Order $r) => $r->payment_status === PaymentStatus::Paid)
+                    ->label('Mark as refunded')->icon('heroicon-o-arrow-uturn-left')->color('danger')
+                    ->visible(fn (Order $r) => $r->payment_status === PaymentStatus::Paid && (bool) auth()->user()?->isAdmin())
                     ->requiresConfirmation()
-                    ->modalDescription('Refunds this paid order and restores its stock. This cannot be undone here.')
-                    ->action(fn (Order $r) => app(RestockOrder::class)->handle($r))
-                    ->successNotificationTitle('Order refunded and restocked'),
+                    ->modalHeading('Mark order as refunded')
+                    // IMPORTANT: this is a bookkeeping action only — it updates the order to
+                    // Refunded and restores stock. It does NOT move money back through
+                    // Thawani. Issue the actual refund in the Thawani dashboard first.
+                    ->modalDescription('This marks the order as Refunded and restores its stock for your records. It does NOT send money back to the customer — issue the actual refund in the Thawani dashboard first. This cannot be undone here.')
+                    ->action(function (Order $r) {
+                        app(RestockOrder::class)->handle($r);
+                        static::notifyCustomer($r, 'Your order was refunded', 'Your order has been marked as refunded. Please allow a few business days for the funds to appear.');
+                    })
+                    ->successNotificationTitle('Order marked as refunded and restocked'),
                 Action::make('cancel')
                     ->label('Cancel')->icon('heroicon-o-x-circle')->color('gray')
                     ->visible(fn (Order $r) => $r->status === OrderStatus::Pending && $r->payment_status !== PaymentStatus::Paid)
                     ->requiresConfirmation()
-                    ->action(fn (Order $r) => static::transition($r, OrderStatus::Cancelled, 'Cancelled', PaymentStatus::Cancelled))
+                    ->action(function (Order $r) {
+                        app(ReleaseOrderStock::class)->handle(
+                            $r, OrderStatus::Cancelled, PaymentStatus::Cancelled,
+                            'Cancelled by '.(auth()->user()?->name ?? 'admin').' — reservation released.'
+                        );
+                        static::notifyCustomer($r, 'Your order was cancelled', 'Your order has been cancelled. If you have any questions, please contact us.');
+                    })
                     ->successNotificationTitle('Order cancelled'),
                 EditAction::make()->label('View'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    ExportBulkAction::make()->exporter(OrderExporter::class),
-                    DeleteBulkAction::make(),
+                    // Customer PII export and destructive delete are admin-only.
+                    ExportBulkAction::make()->exporter(OrderExporter::class)
+                        ->visible(fn () => (bool) auth()->user()?->isAdmin()),
+                    DeleteBulkAction::make()
+                        ->visible(fn () => (bool) auth()->user()?->isAdmin()),
+                    RestoreBulkAction::make()
+                        ->visible(fn () => (bool) auth()->user()?->isAdmin()),
+                    ForceDeleteBulkAction::make()
+                        ->visible(fn () => (bool) auth()->user()?->isAdmin()),
                 ]),
             ]);
     }

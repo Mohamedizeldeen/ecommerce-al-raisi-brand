@@ -1,4 +1,4 @@
-<x-layouts.storefront title="{{ __('Shopping Bag') }}">
+<x-layouts.storefront title="{{ __('Shopping Bag') }}" :noindex="true">
     <section class="mx-auto max-w-5xl px-4 sm:px-6 py-12">
         <h1 class="mb-8 text-4xl text-ink">{{ __('Shopping Bag') }}</h1>
 
@@ -58,6 +58,9 @@
                             @endif
                             <div class="flex justify-between"><dt class="text-stone-500">{{ __('Shipping') }}</dt><dd>{{ $summary['shipping'] > 0 ? format_omr($summary['shipping']) : __('Free') }}</dd></div>
                             <div class="flex justify-between border-t border-stone-soft pt-3 text-base text-ink"><dt>{{ __('Total') }}</dt><dd>{{ format_omr($summary['total']) }}</dd></div>
+                            @if ($summary['tax'] > 0)
+                                <div class="flex justify-between text-xs text-stone-400"><dt>{{ __('Includes VAT (:percent%)', ['percent' => $summary['vat_percent']]) }}</dt><dd>{{ format_omr($summary['tax']) }}</dd></div>
+                            @endif
                         </dl>
 
                         <a href="{{ route('checkout.index') }}"

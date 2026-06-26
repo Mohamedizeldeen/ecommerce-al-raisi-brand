@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Orders\MarkOrderPaid;
+use App\Actions\Orders\ReleaseOrderStock;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Exceptions\StockUnavailableException;
@@ -39,6 +40,7 @@ class CheckoutController extends Controller
         return view('checkout.index', [
             'cart' => $cart,
             'summary' => $this->cart->summary(),
+            'defaultAddress' => Auth::user()?->defaultAddress(),
         ]);
     }
 
@@ -71,6 +73,11 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', __('Your bag is empty.'));
         }
 
+        // Optionally remember this address for the signed-in customer.
+        if (Auth::check() && $request->boolean('save_address')) {
+            $this->saveCheckoutAddress($data);
+        }
+
         $summary = $this->cart->summary();
 
         try {
@@ -82,7 +89,11 @@ class CheckoutController extends Controller
 
                 foreach ($cart->items as $item) {
                     $variant = $locked->get($item->product_variant_id);
-                    if (! $variant || ! $variant->is_active || $variant->stock_qty < $item->quantity) {
+                    $product = $variant?->product;
+                    $productAvailable = $product && $product->is_active
+                        && ($product->published_at === null || $product->published_at <= now());
+
+                    if (! $variant || ! $variant->is_active || ! $productAvailable || $variant->stock_qty < $item->quantity) {
                         throw new StockUnavailableException((string) $item->variant?->product?->name);
                     }
                 }
@@ -95,8 +106,11 @@ class CheckoutController extends Controller
                     'subtotal_baisa' => $summary['subtotal'],
                     'shipping_baisa' => $summary['shipping'],
                     'discount_baisa' => $summary['discount'],
+                    'tax_baisa' => $summary['tax'],
+                    'vat_percent' => $summary['vat_percent'],
                     'total_baisa' => $summary['total'],
                     'currency' => 'OMR',
+                    'locale' => app()->getLocale(),
                     'coupon_code' => $cart->coupon_code,
                     'customer_name' => $data['customer_name'],
                     'customer_email' => $data['customer_email'],
@@ -123,6 +137,13 @@ class CheckoutController extends Controller
                     ]);
                 }
 
+                // Reserve stock now (the variants are locked) so the payment window
+                // holds the units — two shoppers can't both pay for the last piece.
+                // ReleaseOrderStock returns these on cancel/expiry/failure.
+                foreach ($cart->items as $item) {
+                    $locked->get($item->product_variant_id)->decrement('stock_qty', (int) $item->quantity);
+                }
+
                 $order->statusHistories()->create([
                     'to_status' => OrderStatus::Pending->value,
                     'note' => 'Order created at checkout.',
@@ -142,6 +163,13 @@ class CheckoutController extends Controller
             $redirectUrl = $this->thawani->createSession($order);
         } catch (\Throwable $e) {
             report($e);
+
+            // The order exists with reserved stock but payment never started — release
+            // the reservation now rather than holding the units until the 24h expiry.
+            app(ReleaseOrderStock::class)->handle(
+                $order, OrderStatus::Cancelled, PaymentStatus::Failed,
+                'Payment could not be started — reservation released.'
+            );
 
             return redirect()->route('cart.index')
                 ->with('error', 'We could not start the payment. Please try again in a moment.');
@@ -189,22 +217,34 @@ class CheckoutController extends Controller
             if ($order
                 && $order->status === OrderStatus::Pending
                 && $order->payment_status !== PaymentStatus::Paid) {
-                $from = $order->payment_status->value;
-
-                $order->update([
-                    'status' => OrderStatus::Cancelled,
-                    'payment_status' => PaymentStatus::Cancelled,
-                ]);
-
-                $order->statusHistories()->create([
-                    'from_status' => $from,
-                    'to_status' => OrderStatus::Cancelled->value,
-                    'note' => 'Payment cancelled by customer at checkout.',
-                ]);
+                app(ReleaseOrderStock::class)->handle(
+                    $order, OrderStatus::Cancelled, PaymentStatus::Cancelled,
+                    'Payment cancelled by customer at checkout — reservation released.'
+                );
             }
         }
 
         return redirect()->route('cart.index')
             ->with('error', 'Payment was cancelled — your bag has been saved.');
+    }
+
+    /** Persist the checkout shipping details into the customer's address book. */
+    private function saveCheckoutAddress(array $data): void
+    {
+        $user = Auth::user();
+
+        $address = $user->addresses()->create([
+            'name' => $data['customer_name'],
+            'phone' => $data['customer_phone'] ?? null,
+            'line1' => $data['shipping_address_line1'],
+            'line2' => $data['shipping_address_line2'] ?? null,
+            'city' => $data['shipping_city'],
+            'region' => $data['shipping_region'] ?? null,
+            'country' => 'Oman',
+        ]);
+
+        if ($user->addresses()->count() === 1) {
+            $address->update(['is_default' => true]);
+        }
     }
 }

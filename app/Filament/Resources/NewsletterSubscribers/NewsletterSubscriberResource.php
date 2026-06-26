@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NewsletterSubscribers;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\NewsletterSubscribers\Pages\CreateNewsletterSubscriber;
 use App\Filament\Resources\NewsletterSubscribers\Pages\EditNewsletterSubscriber;
 use App\Filament\Resources\NewsletterSubscribers\Pages\ListNewsletterSubscribers;
@@ -19,6 +20,8 @@ use Filament\Tables\Table;
 
 class NewsletterSubscriberResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = NewsletterSubscriber::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-envelope';

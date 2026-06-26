@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="__('Search')">
+<x-layouts.storefront :title="__('Search')" :noindex="true">
     <section class="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <form method="GET" action="{{ route('search') }}" class="mx-auto max-w-xl">
             <div class="flex items-center border-b border-ink">
@@ -16,7 +16,7 @@
             @if ($term !== '')
                 <p class="mb-8 text-sm text-stone-500">{{ __('Results for') }} &ldquo;<span class="text-ink">{{ $term }}</span>&rdquo;</p>
             @endif
-            <x-storefront.product-grid :products="$products" />
+            <x-storefront.product-grid :products="$products" :facets="$facets" />
         </div>
     </section>
 </x-layouts.storefront>

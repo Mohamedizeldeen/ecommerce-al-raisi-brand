@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Coupons;
 
 use App\Enums\CouponType;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Coupons\Pages\CreateCoupon;
 use App\Filament\Resources\Coupons\Pages\EditCoupon;
 use App\Filament\Resources\Coupons\Pages\ListCoupons;
@@ -24,6 +25,8 @@ use Filament\Tables\Table;
 
 class CouponResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Coupon::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-ticket';
@@ -38,7 +41,11 @@ class CouponResource extends Resource
             ->components([
                 TextInput::make('code')
                     ->required()
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    // Store codes in a canonical UPPER form so matching is deterministic
+                    // (the storefront looks them up case-insensitively).
+                    ->dehydrateStateUsing(fn ($state) => strtoupper(trim((string) $state)))
+                    ->extraInputAttributes(['style' => 'text-transform:uppercase']),
                 Select::make('type')
                     ->options(CouponType::class)
                     ->default('percent')

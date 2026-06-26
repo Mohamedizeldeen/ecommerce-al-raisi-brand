@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Ai\Agents\StorefrontAssistant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Ai\Enums\Lab;
 use Throwable;
@@ -38,6 +39,22 @@ class AssistantController extends Controller
         }
 
         $validated = $validator->validated();
+
+        // Cost guard: a per-IP daily cap plus a global daily budget, mirroring the
+        // try-on endpoint so an attacker rotating IPs (under the 20/min throttle)
+        // can't drive unbounded Gemini spend. Cache::add seeds the counter first —
+        // the database cache store won't create a key on increment alone.
+        $perKey = 'assistant:'.$request->ip().':'.now()->format('Y-m-d');
+        $budgetKey = 'assistant:'.now()->format('Y-m-d');
+        Cache::add($perKey, 0, now()->addHours(25));
+        Cache::add($budgetKey, 0, now()->addHours(25));
+
+        if ((int) Cache::increment($perKey) > (int) config('assistant.per_client_daily', 50)
+            || (int) Cache::increment($budgetKey) > (int) config('assistant.daily_limit', 1000)) {
+            return response()->json([
+                'reply' => __('The assistant is busy right now — please try again in a little while.'),
+            ], 503);
+        }
 
         $history = collect($validated['history'] ?? [])
             ->map(fn (array $turn): array => [

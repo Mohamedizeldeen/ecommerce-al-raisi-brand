@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -14,7 +15,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia;
+    use HasFactory, HasTranslations, InteractsWithMedia, SoftDeletes;
 
     /** @var list<string> */
     public array $translatable = ['name', 'description', 'fabric', 'meta_title', 'meta_description'];
@@ -24,6 +25,7 @@ class Product extends Model implements HasMedia
     protected $casts = [
         'specs' => 'array',
         'base_price_baisa' => 'integer',
+        'compare_at_price_baisa' => 'integer',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
@@ -33,6 +35,16 @@ class Product extends Model implements HasMedia
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function approvedReviews(): HasMany
+    {
+        return $this->hasMany(Review::class)->where('is_approved', true)->latest();
     }
 
     public function categories(): BelongsToMany
@@ -113,6 +125,16 @@ class Product extends Model implements HasMedia
     public function getFormattedPriceAttribute(): string
     {
         return format_omr((int) $this->base_price_baisa);
+    }
+
+    /**
+     * A product is "on sale" when a compare-at price is set above the current price;
+     * base_price_baisa is treated as the live (sale) price.
+     */
+    public function onSale(): bool
+    {
+        return $this->compare_at_price_baisa !== null
+            && (int) $this->compare_at_price_baisa > (int) $this->base_price_baisa;
     }
 
     public function getInStockAttribute(): bool

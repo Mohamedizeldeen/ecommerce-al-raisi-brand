@@ -36,9 +36,3 @@ it('stores a contact message but ignores honeypot bots', function () {
 it('serves an XML sitemap', function () {
     get('/sitemap.xml')->assertOk()->assertSee('<urlset', false);
 });
-
-it('shows the 18+ age gate and sets a cookie when accepted', function () {
-    get('/')->assertSee('Are you 18 years old or older?');
-
-    post('/age-verify')->assertRedirect()->assertCookie('age_verified');
-});

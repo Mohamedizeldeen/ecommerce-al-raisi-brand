@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
@@ -11,6 +12,8 @@ use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
@@ -25,12 +28,15 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Product::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shopping-bag';
@@ -81,6 +87,14 @@ class ProductResource extends Resource
                     ->step(0.001)
                     ->formatStateUsing(fn (?int $state) => $state !== null ? $state / 1000 : null)
                     ->dehydrateStateUsing(fn ($state) => (int) round(((float) $state) * 1000)),
+                TextInput::make('compare_at_price_baisa')
+                    ->label('Compare-at price (OMR)')
+                    ->helperText('Optional. When higher than the price, the storefront shows it struck through as a sale.')
+                    ->prefix('OMR')
+                    ->numeric()
+                    ->step(0.001)
+                    ->formatStateUsing(fn (?int $state) => $state !== null ? $state / 1000 : null)
+                    ->dehydrateStateUsing(fn ($state) => ($state === null || $state === '') ? null : (int) round(((float) $state) * 1000)),
                 KeyValue::make('specs')->keyLabel('Spec')->valueLabel('Detail')->columnSpanFull(),
             ]),
             Section::make('Organisation')->columns(2)->schema([
@@ -151,6 +165,7 @@ class ProductResource extends Resource
             ->filters([
                 TernaryFilter::make('is_active'),
                 TernaryFilter::make('is_featured'),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -158,6 +173,8 @@ class ProductResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

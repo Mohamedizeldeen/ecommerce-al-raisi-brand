@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Enums\CouponType;
+use App\Filament\Concerns\AdminOnly;
 use App\Models\Coupon;
 use App\Models\Setting;
 use BackedEnum;
@@ -20,6 +21,8 @@ use Filament\Support\Icons\Heroicon;
  */
 class ManageSettings extends Page
 {
+    use AdminOnly;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static string|\UnitEnum|null $navigationGroup = 'System';
@@ -51,6 +54,7 @@ class ManageSettings extends Page
             'free_shipping_threshold_omr' => (int) Setting::get('free_shipping_threshold_baisa', 100000) / 1000,
             'shipping_flat_omr' => (int) Setting::get('shipping_flat_baisa', 2000) / 1000,
             'newsletter_discount_percent' => (int) Setting::get('newsletter_discount_percent', 10),
+            'vat_percent' => (int) Setting::get('vat_percent', 5),
         ]);
     }
 
@@ -99,6 +103,17 @@ class ManageSettings extends Page
                             ->minValue(0)
                             ->maxValue(100),
                     ]),
+
+                Section::make('Tax')
+                    ->schema([
+                        TextInput::make('vat_percent')
+                            ->label('VAT rate')
+                            ->suffix('%')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->helperText('Prices are VAT-inclusive; this rate is broken out on the cart, checkout and receipts. Set to 0 to hide VAT.'),
+                    ]),
             ])
             ->statePath('data');
     }
@@ -119,6 +134,7 @@ class ManageSettings extends Page
         Setting::put('shipping_flat_baisa', (int) round(((float) ($data['shipping_flat_omr'] ?? 0)) * 1000));
         $percent = (int) ($data['newsletter_discount_percent'] ?? 0);
         Setting::put('newsletter_discount_percent', $percent);
+        Setting::put('vat_percent', (int) ($data['vat_percent'] ?? 0));
 
         // Keep the advertised welcome code in sync with a real coupon. The storefront
         // shows "WELCOME{percent}" everywhere, so ensure that exact code exists and is a

@@ -49,6 +49,20 @@
                         : 'https://schema.org/OutOfStock',
                 ],
             ];
+            if ($reviewStats['count'] > 0) {
+                $productLd['aggregateRating'] = [
+                    '@type' => 'AggregateRating',
+                    'ratingValue' => $reviewStats['avg'],
+                    'reviewCount' => $reviewStats['count'],
+                ];
+                $productLd['review'] = $reviews->take(5)->map(fn ($r) => [
+                    '@type' => 'Review',
+                    'author' => ['@type' => 'Person', 'name' => $r->author_name],
+                    'datePublished' => $r->created_at->toDateString(),
+                    'reviewRating' => ['@type' => 'Rating', 'ratingValue' => $r->rating, 'bestRating' => 5],
+                    'reviewBody' => $r->body,
+                ])->values()->all();
+            }
             $breadcrumbLd = [
                 '@context' => 'https://schema.org',
                 '@type' => 'BreadcrumbList',
@@ -99,7 +113,19 @@
                     <p class="text-xs uppercase tracking-[0.25em] text-accent">{{ $product->collections->first()->name }}</p>
                 @endif
                 <h1 class="mt-2 text-4xl text-ink">{{ $product->name }}</h1>
-                <p class="mt-4 text-xl text-stone-600" x-text="price">{{ money((int) $product->base_price_baisa) }}</p>
+                @if ($reviewStats['count'] > 0)
+                    @php($avgRounded = (int) round($reviewStats['avg']))
+                    <a href="#reviews" class="mt-2 inline-flex items-center gap-2 text-sm hover:underline">
+                        <span class="text-accent" aria-hidden="true">{{ str_repeat('★', $avgRounded).str_repeat('☆', 5 - $avgRounded) }}</span>
+                        <span class="text-stone-500">{{ $reviewStats['avg'] }} · {{ $reviewStats['count'] }} {{ $reviewStats['count'] === 1 ? __('review') : __('reviews') }}</span>
+                    </a>
+                @endif
+                <p class="mt-4 text-xl text-stone-600">
+                    <span x-text="price">{{ money((int) $product->base_price_baisa) }}</span>
+                    @if ($product->onSale())
+                        <span class="ms-2 text-base text-stone-400 line-through">{{ money((int) $product->compare_at_price_baisa) }}</span>
+                    @endif
+                </p>
 
                 @if ($product->description)
                     <div class="mt-6 leading-relaxed text-stone-600">{!! nl2br(e($product->description)) !!}</div>
@@ -163,6 +189,32 @@
                         <span x-show="$store.cart.loading" x-cloak>{{ __('Adding…') }}</span>
                     </button>
                 </form>
+
+                {{-- Back-in-stock notify (shows when the chosen variant is sold out) --}}
+                <div x-show="current && current.stock < 1" x-cloak class="mt-4">
+                    <p class="mb-2 text-sm text-stone-500">{{ __('Out of stock — get notified when it returns.') }}</p>
+                    <form method="POST" action="{{ route('stock.notify') }}" class="flex gap-2">
+                        @csrf
+                        <input type="hidden" name="variant_id" :value="current?.id">
+                        <input type="email" name="email" required placeholder="{{ __('Email address') }}" value="{{ auth()->user()?->email }}"
+                            class="w-full min-w-0 border border-stone-soft px-3 py-2 text-sm focus:border-accent focus:outline-none">
+                        <button type="submit" class="shrink-0 bg-ink px-4 text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent">{{ __('Notify me') }}</button>
+                    </form>
+                </div>
+
+                @auth
+                    @php($inWishlist = in_array($product->id, auth()->user()->wishlistProductIds()))
+                    <form method="POST" action="{{ route('account.wishlist.toggle', $product) }}" class="mt-3">
+                        @csrf
+                        <button type="submit"
+                            class="flex w-full items-center justify-center gap-2 border border-stone-soft py-3.5 text-xs uppercase tracking-[0.2em] text-ink transition hover:border-ink">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="{{ $inWishlist ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                            </svg>
+                            {{ $inWishlist ? __('In your wishlist') : __('Add to wishlist') }}
+                        </button>
+                    </form>
+                @endauth
 
                 {{-- Virtual try-on (AI: upload a photo, see the product on you) --}}
                 @if (config('assistant.try_on.enabled', true))
@@ -268,6 +320,67 @@
                 </div>
             </section>
         @endif
+
+        {{-- Customer reviews --}}
+        <section class="mt-24 border-t border-stone-soft pt-16" id="reviews">
+            <h2 class="mb-2 text-center text-3xl text-ink">{{ __('Customer Reviews') }}</h2>
+            @if ($reviewStats['count'] > 0)
+                @php($avgRounded = (int) round($reviewStats['avg']))
+                <p class="mb-12 text-center text-sm text-stone-500">
+                    <span class="text-accent" aria-hidden="true">{{ str_repeat('★', $avgRounded).str_repeat('☆', 5 - $avgRounded) }}</span>
+                    {{ $reviewStats['avg'] }} {{ __('out of 5') }} · {{ $reviewStats['count'] }} {{ $reviewStats['count'] === 1 ? __('review') : __('reviews') }}
+                </p>
+            @else
+                <p class="mb-12 text-center text-sm text-stone-500">{{ __('No reviews yet — be the first to review this piece.') }}</p>
+            @endif
+
+            <div class="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2">
+                {{-- List --}}
+                <div class="space-y-6">
+                    @foreach ($reviews as $review)
+                        <article class="border-b border-stone-soft pb-6">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-sm font-medium text-ink">{{ $review->author_name }}</p>
+                                <span class="text-sm text-accent" aria-label="{{ $review->rating }} {{ __('out of 5') }}">{{ str_repeat('★', $review->rating).str_repeat('☆', 5 - $review->rating) }}</span>
+                            </div>
+                            @if ($review->is_verified_purchase)
+                                <p class="mt-1 text-[11px] uppercase tracking-[0.15em] text-green-700">{{ __('Verified purchase') }}</p>
+                            @endif
+                            @if ($review->title)
+                                <p class="mt-2 font-medium text-ink">{{ $review->title }}</p>
+                            @endif
+                            <p class="mt-1 text-sm leading-relaxed text-stone-600">{{ $review->body }}</p>
+                            <p class="mt-2 text-xs text-stone-400">{{ $review->created_at->translatedFormat('d M Y') }}</p>
+                        </article>
+                    @endforeach
+                </div>
+
+                {{-- Submit form --}}
+                <div>
+                    <h3 class="mb-4 text-xs uppercase tracking-[0.18em] text-ink">{{ __('Write a review') }}</h3>
+                    <form method="POST" action="{{ route('products.reviews.store', $product) }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="mb-1 block text-xs text-stone-500">{{ __('Rating') }}</label>
+                            <select name="rating" required class="w-full border border-stone-soft bg-white px-3 py-2 text-sm focus:border-accent focus:outline-none">
+                                @for ($i = 5; $i >= 1; $i--)
+                                    <option value="{{ $i }}" @selected(old('rating') == $i)>{{ $i }} {{ $i === 1 ? __('star') : __('stars') }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <x-storefront.field name="author_name" label="{{ __('Your name') }}" :value="old('author_name', auth()->user()?->name)" />
+                        <x-storefront.field name="author_email" label="{{ __('Email') }}" type="email" :value="old('author_email', auth()->user()?->email)" />
+                        <x-storefront.field name="title" label="{{ __('Title (optional)') }}" :value="old('title')" />
+                        <div>
+                            <label class="mb-1 block text-xs text-stone-500">{{ __('Your review') }}</label>
+                            <textarea name="body" rows="4" required class="w-full border border-stone-soft bg-white px-3 py-2 text-sm focus:border-accent focus:outline-none">{{ old('body') }}</textarea>
+                            @error('body')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <button type="submit" class="w-full bg-ink py-3 text-xs uppercase tracking-[0.2em] text-white transition hover:bg-accent">{{ __('Submit review') }}</button>
+                    </form>
+                </div>
+            </div>
+        </section>
     </div>
 
     @push('scripts')

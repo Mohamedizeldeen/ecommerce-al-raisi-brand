@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
@@ -23,6 +24,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CategoryResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Category::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-tag';
@@ -43,7 +46,7 @@ class CategoryResource extends Resource
                 TextInput::make('slug')
                     ->required(),
                 Select::make('parent_id')
-                    ->relationship('parent', 'name', modifyQueryUsing: fn (Builder $q, ?Category $record) => $q->when($record, fn ($q) => $q->whereKeyNot($record->getKey()))),
+                    ->relationship('parent', 'name', modifyQueryUsing: fn (Builder $query, ?Category $record) => $query->when($record, fn (Builder $query) => $query->whereKeyNot($record->getKey()))),
                 Textarea::make('description')
                     ->columnSpanFull(),
                 Textarea::make('description_ar')

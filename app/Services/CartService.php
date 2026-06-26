@@ -59,6 +59,16 @@ class CartService
     }
 
     /**
+     * Record cart activity: bump updated_at and clear any abandoned-cart reminder so
+     * a re-engaged cart can be reminded again if it is later abandoned.
+     */
+    private function markCartActive(Cart $cart): void
+    {
+        $cart->reminder_sent_at = null;
+        $cart->touch();
+    }
+
+    /**
      * Delete expired guest carts (and their items). Returns the number of carts removed.
      */
     public function pruneExpired(): int
@@ -119,11 +129,14 @@ class CartService
             $item->quantity = $this->clampToStock($desired, $variant);
             $item->save();
         });
+
+        $this->markCartActive($cart);
     }
 
     public function updateItem(CartItem $item, int $qty): void
     {
         $this->assertOwns($item);
+        $this->markCartActive($this->current());
 
         if ($qty < 1) {
             $item->delete();
@@ -193,7 +206,12 @@ class CartService
     {
         $cart = $this->current();
         $cart->loadMissing('items.variant.product');
-        $coupon = Coupon::where('code', $code)->first();
+
+        // Promo codes are case-insensitive and whitespace-tolerant; match on a
+        // canonical UPPER form so behaviour doesn't depend on DB collation, then
+        // store the coupon's own (canonical) code on the cart.
+        $code = strtoupper(trim($code));
+        $coupon = Coupon::whereRaw('UPPER(code) = ?', [$code])->first();
 
         if (! $coupon || ! $coupon->isValidFor($this->purchasableSubtotalBaisa($cart))) {
             return false;
@@ -210,7 +228,7 @@ class CartService
     }
 
     /**
-     * @return array{subtotal:int, discount:int, shipping:int, total:int, count:int}
+     * @return array{subtotal:int, discount:int, shipping:int, tax:int, vat_percent:int, total:int, count:int}
      */
     public function summary(): array
     {
@@ -221,12 +239,20 @@ class CartService
         $discount = $this->discountBaisa($cart, $subtotal);
         $payable = max(0, $subtotal - $discount);
         $shipping = $this->shippingBaisa($payable);
+        $total = $payable + $shipping;
+
+        // VAT is inclusive (displayed prices already contain it); break out the
+        // component for transparency without changing what the customer pays.
+        $vatPercent = (int) Setting::get('vat_percent', 5);
+        $tax = $vatPercent > 0 ? (int) round($total * $vatPercent / (100 + $vatPercent)) : 0;
 
         return [
             'subtotal' => $subtotal,
             'discount' => $discount,
             'shipping' => $shipping,
-            'total' => $payable + $shipping,
+            'tax' => $tax,
+            'vat_percent' => $vatPercent,
+            'total' => $total,
             'count' => $cart->totalQuantity(),
         ];
     }

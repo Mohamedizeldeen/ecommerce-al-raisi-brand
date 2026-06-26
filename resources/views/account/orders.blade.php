@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="__('My Orders')">
+<x-layouts.storefront :title="__('My Orders')" :noindex="true">
     <section class="mx-auto max-w-5xl px-4 sm:px-6 py-12">
         <div class="mb-8 flex items-center justify-between">
             <h1 class="text-3xl text-ink">{{ __('My Orders') }}</h1>

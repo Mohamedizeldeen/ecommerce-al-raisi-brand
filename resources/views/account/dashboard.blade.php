@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="__('My Account')">
+<x-layouts.storefront :title="__('My Account')" :noindex="true">
     <section class="mx-auto max-w-5xl px-4 sm:px-6 py-12">
         <div class="mb-8 flex items-center justify-between">
             <h1 class="text-3xl text-ink">{{ __('My Account') }}</h1>
@@ -9,6 +9,12 @@
         </div>
 
         <p class="text-stone-600">{{ __('Welcome back,') }} {{ $user->name }}.</p>
+
+        <nav class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs uppercase tracking-[0.15em] text-accent">
+            <a href="{{ route('account.orders') }}" class="hover:underline">{{ __('My Orders') }}</a>
+            <a href="{{ route('account.wishlist') }}" class="hover:underline">{{ __('My Wishlist') }}</a>
+            <a href="{{ route('account.addresses') }}" class="hover:underline">{{ __('Addresses') }}</a>
+        </nav>
 
         <div class="mt-10">
             <div class="mb-4 flex items-center justify-between">

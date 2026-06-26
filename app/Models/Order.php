@@ -7,10 +7,13 @@ use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Order extends Model
 {
+    use SoftDeletes;
+
     protected $guarded = ['id'];
 
     protected $casts = [
@@ -19,8 +22,12 @@ class Order extends Model
         'subtotal_baisa' => 'integer',
         'shipping_baisa' => 'integer',
         'discount_baisa' => 'integer',
+        'tax_baisa' => 'integer',
+        'vat_percent' => 'integer',
         'total_baisa' => 'integer',
         'paid_at' => 'datetime',
+        'shipped_at' => 'datetime',
+        'stock_released_at' => 'datetime',
         'metadata' => 'array',
     ];
 

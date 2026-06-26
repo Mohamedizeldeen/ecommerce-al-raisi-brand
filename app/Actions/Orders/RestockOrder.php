@@ -30,7 +30,9 @@ class RestockOrder
                 $item->variant?->increment('stock_qty', (int) $item->quantity);
             }
 
-            $fresh->update(['payment_status' => $payment, 'status' => $status]);
+            // Mark the reservation as returned so a stray ReleaseOrderStock can't
+            // double-restore a refunded order's stock.
+            $fresh->update(['payment_status' => $payment, 'status' => $status, 'stock_released_at' => now()]);
 
             $fresh->statusHistories()->create([
                 'from_status' => $from,

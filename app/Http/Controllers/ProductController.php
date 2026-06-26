@@ -8,7 +8,13 @@ class ProductController extends Controller
 {
     public function show(Product $product)
     {
-        abort_unless($product->is_active, 404);
+        // Mirror the published() scope used by every listing surface: a product
+        // scheduled for a future launch (is_active but published_at in the future)
+        // must not be reachable by direct URL before its embargo lifts.
+        abort_unless(
+            $product->is_active && ($product->published_at === null || $product->published_at <= now()),
+            404
+        );
 
         $product->load([
             'variants' => fn ($q) => $q->where('is_active', true)->orderBy('size')->orderBy('color'),
@@ -30,6 +36,12 @@ class ProductController extends Controller
             ->take(4)
             ->get();
 
-        return view('products.show', compact('product', 'related'));
+        $reviews = $product->approvedReviews()->get();
+        $reviewStats = [
+            'count' => $reviews->count(),
+            'avg' => $reviews->count() ? round((float) $reviews->avg('rating'), 1) : null,
+        ];
+
+        return view('products.show', compact('product', 'related', 'reviews', 'reviewStats'));
     }
 }

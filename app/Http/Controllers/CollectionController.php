@@ -26,11 +26,13 @@ class CollectionController extends Controller
     {
         abort_unless($collection->is_active, 404);
 
-        $products = $this->applyProductSort(
-            $collection->products()->published()->with(['media', 'variants']),
-            $request
-        )->paginate(12)->withQueryString();
+        $base = $collection->products()->published()->with(['media', 'variants']);
 
-        return view('collections.show', compact('collection', 'products'));
+        $facets = $this->productFacets($base);
+
+        $products = $this->applyProductSort($this->applyProductFilters($base, $request), $request)
+            ->paginate(12)->withQueryString();
+
+        return view('collections.show', compact('collection', 'products', 'facets'));
     }
 }

@@ -1,4 +1,4 @@
-<x-layouts.storefront title="{{ __('Terms of Service') }}">
+<x-layouts.storefront title="{{ __('Terms of Service') }}" :description="__('The terms of service for shopping with Amal Al Raisi.')">
     <section class="mx-auto max-w-3xl px-4 sm:px-6 py-16">
         <h1 class="text-4xl text-ink">{{ __('Terms of Service') }}</h1>
         <div class="mt-8 space-y-5 text-sm leading-relaxed text-stone-600">

@@ -1,4 +1,4 @@
-<x-layouts.storefront title="{{ __('Shipping & Returns') }}">
+<x-layouts.storefront title="{{ __('Shipping & Returns') }}" :description="__('Shipping options, delivery times and our returns policy for orders across Oman.')">
     <section class="mx-auto max-w-3xl px-4 sm:px-6 py-16">
         <h1 class="text-4xl text-ink">{{ __('Shipping & Returns') }}</h1>
         <div class="mt-8 space-y-5 text-sm leading-relaxed text-stone-600">

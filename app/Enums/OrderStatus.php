@@ -15,7 +15,7 @@ enum OrderStatus: string implements HasColor, HasLabel
 
     public function getLabel(): string
     {
-        return ucfirst($this->value);
+        return __(ucfirst($this->value));
     }
 
     public function getColor(): string

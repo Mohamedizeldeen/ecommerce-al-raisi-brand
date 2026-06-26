@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="__('Collections')">
+<x-layouts.storefront :title="__('Collections')" :description="__('Explore the curated collections of Amal Al Raisi — Omani-inspired abayas, kaftans and occasion wear.')">
     <section class="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <header class="mb-14 text-center">
             <h1 class="text-4xl text-ink">{{ __('Collections') }}</h1>

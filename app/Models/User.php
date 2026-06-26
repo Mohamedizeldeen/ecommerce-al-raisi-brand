@@ -3,10 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -51,6 +53,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'role' => UserRole::class,
         ];
     }
 
@@ -59,11 +62,47 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Order::class);
     }
 
+    /** @var array<int>|null Memoised wishlist product ids for this request. */
+    private ?array $wishlistIds = null;
+
+    public function wishlistProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'wishlist_items')->withTimestamps();
+    }
+
+    /** Product ids in this user's wishlist — one query per request (memoised). */
+    public function wishlistProductIds(): array
+    {
+        return $this->wishlistIds ??= $this->wishlistProducts()->pluck('products.id')->all();
+    }
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function defaultAddress(): ?Address
+    {
+        return $this->addresses()->orderByDesc('is_default')->orderByDesc('id')->first();
+    }
+
     /**
      * Only administrators may access the Filament admin panel.
      */
     public function canAccessPanel(Panel $panel): bool
     {
         return (bool) $this->is_admin;
+    }
+
+    /** A full administrator — every capability in the panel. */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin && $this->role === UserRole::Admin;
+    }
+
+    /** A fulfilment/support staff member — limited panel access. */
+    public function isStaff(): bool
+    {
+        return $this->is_admin && $this->role === UserRole::Staff;
     }
 }

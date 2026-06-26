@@ -12,6 +12,7 @@ class Cart extends Model
 
     protected $casts = [
         'expires_at' => 'datetime',
+        'reminder_sent_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

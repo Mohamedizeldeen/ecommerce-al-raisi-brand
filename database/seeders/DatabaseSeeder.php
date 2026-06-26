@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Amal Admin',
             'email' => 'admin@amalalraisi.com',
-        ])->forceFill(['is_admin' => true])->save();
+        ])->forceFill(['is_admin' => true, 'role' => 'admin'])->save();
 
         User::factory()->create([
             'name' => 'Test Customer',

@@ -55,9 +55,16 @@ class CartController extends Controller
             'quantity' => ['nullable', 'integer', 'min:1', 'max:20'],
         ]);
 
-        $variant = ProductVariant::findOrFail($data['variant_id']);
+        $variant = ProductVariant::with('product')->findOrFail($data['variant_id']);
 
-        if (! $variant->is_active || $variant->stock_qty < 1) {
+        // Reject variants whose parent product is inactive or not yet published, even
+        // if the variant row itself is still active — a stale/guessed variant_id for a
+        // hidden product must not be purchasable. Checkout re-validates this too.
+        $product = $variant->product;
+        $productAvailable = $product && $product->is_active
+            && ($product->published_at === null || $product->published_at <= now());
+
+        if (! $variant->is_active || ! $productAvailable || $variant->stock_qty < 1) {
             return $request->expectsJson()
                 ? response()->json(['ok' => false, 'message' => 'Sorry, that item is out of stock.'], 422)
                 : back()->with('error', 'Sorry, that item is currently out of stock.');

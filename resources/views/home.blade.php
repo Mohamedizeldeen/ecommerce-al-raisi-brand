@@ -1,4 +1,4 @@
-<x-layouts.storefront>
+<x-layouts.storefront :description="__('Amal Al Raisi — an Omani fashion house since 2006. Discover handcrafted abayas, kaftans and occasion wear, with delivery across Oman.')">
     {{-- Hero --}}
     <section class="relative flex min-h-[90vh] items-center justify-center overflow-hidden">
         {{-- Hero video background (muted autoplay loop), shown on ALL screens.

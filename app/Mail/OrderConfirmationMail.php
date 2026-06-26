@@ -13,12 +13,21 @@ class OrderConfirmationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Order $order) {}
+    public function __construct(public Order $order)
+    {
+        // Render in the language the customer checked out in, when captured.
+        if ($order->locale) {
+            $this->locale($order->locale);
+        }
+    }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your '.config('app.name').' order '.$this->order->order_number,
+            subject: __('Your :name order :number', [
+                'name' => config('app.name'),
+                'number' => $this->order->order_number,
+            ]),
         );
     }
 

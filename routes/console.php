@@ -10,4 +10,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('orders:expire-stale')->hourly();
+Schedule::command('cart:send-abandoned')->hourly();
+Schedule::command('stock:notify-restocked')->hourly();
 Schedule::call(fn () => app(CartService::class)->pruneExpired())->daily();

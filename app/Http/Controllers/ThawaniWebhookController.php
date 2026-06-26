@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Orders\MarkOrderPaid;
+use App\Actions\Orders\ReleaseOrderStock;
+use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\PaymentEvent;
@@ -28,7 +30,12 @@ class ThawaniWebhookController extends Controller
         // custom header. The body is re-verified against Thawani regardless.
         $webhookSecret = (string) config('services.thawani.webhook_secret');
 
-        if ($webhookSecret !== '') {
+        if ($webhookSecret === '') {
+            // Fail closed in production: a missing secret would otherwise accept any
+            // anonymous POST (DB pollution, griefing). Locally we allow an empty
+            // secret so the webhook stays easy to exercise in tests/dev.
+            abort_if(app()->isProduction(), 403);
+        } else {
             $provided = (string) ($request->header('Thawani-Webhook-Secret') ?: $request->query('secret', ''));
 
             abort_unless(hash_equals($webhookSecret, $provided), 403);
@@ -108,15 +115,12 @@ class ThawaniWebhookController extends Controller
             && $order->payment_status !== PaymentStatus::Paid
             && $order->payment_status !== PaymentStatus::Failed
         ) {
-            $from = $order->payment_status;
-
-            $order->update(['payment_status' => PaymentStatus::Failed]);
-
-            $order->statusHistories()->create([
-                'from_status' => $order->status->value,
-                'to_status' => $order->status->value,
-                'note' => 'Payment marked failed (Thawani session '.$paymentStatus.').',
-            ]);
+            // Terminal failure: release the reservation and move the order to a terminal
+            // state so the expiry job won't re-process it.
+            app(ReleaseOrderStock::class)->handle(
+                $order, OrderStatus::Cancelled, PaymentStatus::Failed,
+                'Payment failed (Thawani session '.$paymentStatus.') — reservation released.'
+            );
         }
 
         return response()->json(['received' => true]);

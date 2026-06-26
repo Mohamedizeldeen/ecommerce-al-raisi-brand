@@ -1,4 +1,4 @@
-<x-layouts.storefront :title="__('Order Confirmation')">
+<x-layouts.storefront :title="__('Order Confirmation')" :noindex="true">
     <section class="mx-auto max-w-3xl px-4 sm:px-6 py-16">
         <div class="text-center">
             <p class="text-xs uppercase tracking-[0.25em] text-accent">{{ __('Thank you') }}</p>
@@ -9,6 +9,13 @@
                 <span class="rounded-full bg-sand px-3 py-1 text-xs uppercase tracking-wide text-ink">{{ $order->payment_status->getLabel() }}</span>
             </p>
         </div>
+
+        @if ($order->shipped_at && $order->tracking_number)
+            <div class="mt-8 border border-accent/30 bg-sand/40 px-5 py-4 text-center text-sm">
+                <p class="text-xs uppercase tracking-[0.18em] text-accent">{{ __('Tracking') }}</p>
+                <p class="mt-1 text-ink">@if ($order->carrier){{ $order->carrier }} — @endif<span class="font-mono">{{ $order->tracking_number }}</span></p>
+            </div>
+        @endif
 
         <div class="mt-10 border border-stone-soft">
             <ul class="divide-y divide-stone-soft">
@@ -29,6 +36,9 @@
                 @endif
                 <div class="flex justify-between"><dt class="text-stone-500">{{ __('Shipping') }}</dt><dd>{{ $order->shipping_baisa > 0 ? format_omr($order->shipping_baisa) : __('Free') }}</dd></div>
                 <div class="flex justify-between border-t border-stone-soft pt-2 text-base text-ink"><dt>{{ __('Total') }}</dt><dd>{{ format_omr($order->total_baisa) }}</dd></div>
+                @if ($order->tax_baisa > 0)
+                    <div class="flex justify-between text-xs text-stone-400"><dt>{{ __('Includes VAT (:percent%)', ['percent' => $order->vat_percent]) }}</dt><dd>{{ format_omr($order->tax_baisa) }}</dd></div>
+                @endif
             </dl>
         </div>
 

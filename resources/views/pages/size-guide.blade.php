@@ -1,4 +1,4 @@
-<x-layouts.storefront title="{{ __('Size Guide') }}">
+<x-layouts.storefront title="{{ __('Size Guide') }}" :description="__('Find your perfect fit with the Amal Al Raisi size guide for abayas, kaftans and occasion wear.')">
     <section class="mx-auto max-w-3xl px-4 sm:px-6 py-16">
         <h1 class="text-center text-4xl text-ink">{{ __('Size Guide') }}</h1>
         <p class="mt-3 text-center text-stone-500">{{ __('All measurements are in centimetres.') }}</p>

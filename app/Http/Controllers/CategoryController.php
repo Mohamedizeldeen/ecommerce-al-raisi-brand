@@ -18,13 +18,15 @@ class CategoryController extends Controller
         // Include products from this category and any of its sub-categories.
         $categoryIds = $category->children()->pluck('id')->push($category->id);
 
-        $products = $this->applyProductSort(
-            Product::published()
-                ->with(['media', 'variants'])
-                ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds)),
-            $request
-        )->paginate(12)->withQueryString();
+        $base = Product::published()
+            ->with(['media', 'variants'])
+            ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds));
 
-        return view('categories.show', compact('category', 'products'));
+        $facets = $this->productFacets($base);
+
+        $products = $this->applyProductSort($this->applyProductFilters($base, $request), $request)
+            ->paginate(12)->withQueryString();
+
+        return view('categories.show', compact('category', 'products', 'facets'));
     }
 }

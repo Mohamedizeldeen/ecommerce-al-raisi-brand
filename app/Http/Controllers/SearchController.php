@@ -43,11 +43,13 @@ class SearchController extends Controller
 
         // Order by relevance first, then honour the chosen storefront sort
         // (which defaults to published_at desc, id desc).
+        $facets = $this->productFacets($query);
+
         $products = $this->applyProductSort(
-            $query->orderByDesc('is_featured'),
+            $this->applyProductFilters($query, $request)->orderByDesc('is_featured'),
             $request
         )->paginate(12)->withQueryString();
 
-        return view('search', compact('products', 'term'));
+        return view('search', compact('products', 'term', 'facets'));
     }
 }

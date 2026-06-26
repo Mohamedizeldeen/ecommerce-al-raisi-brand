@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Press;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Posts\Schemas\PostForm;
 use App\Filament\Resources\Posts\Tables\PostsTable;
 use App\Filament\Resources\Press\Pages\CreatePressPost;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class PressResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Post::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;

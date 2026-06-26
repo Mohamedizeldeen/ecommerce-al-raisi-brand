@@ -1,4 +1,4 @@
-<x-layouts.storefront title="{{ __('Contact') }}">
+<x-layouts.storefront title="{{ __('Contact') }}" :description="__('Contact Amal Al Raisi for help with orders, sizing, or our collections — we are here to help.')">
     <section class="mx-auto max-w-5xl px-4 sm:px-6 py-12">
         <h1 class="mb-3 text-center text-4xl text-ink">{{ __('Contact Us') }}</h1>
         <p class="mb-10 text-center text-stone-500">{{ __('We would love to hear from you.') }}</p>

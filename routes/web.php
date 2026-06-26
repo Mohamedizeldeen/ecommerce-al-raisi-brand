@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\AtelierController;
 use App\Http\Controllers\Auth\AuthController;
@@ -16,10 +17,13 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\PressController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\StockNotificationController;
 use App\Http\Controllers\ThawaniWebhookController;
 use App\Http\Controllers\VirtualTryOnController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -43,6 +47,14 @@ Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name
 Route::post('/products/{product:slug}/try-on', [VirtualTryOnController::class, 'store'])
     ->middleware('throttle:6,10')
     ->name('products.try-on');
+
+Route::post('/products/{product:slug}/reviews', [ReviewController::class, 'store'])
+    ->middleware('throttle:5,10')
+    ->name('products.reviews.store');
+
+Route::post('/back-in-stock', [StockNotificationController::class, 'store'])
+    ->middleware('throttle:10,10')
+    ->name('stock.notify');
 
 Route::get('/search', [SearchController::class, 'index'])->middleware('throttle:30,1')->name('search');
 
@@ -69,6 +81,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,10');
+
+    // Password reset (Laravel's built-in broker; password_reset_tokens table exists).
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('password.update');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
@@ -77,6 +95,16 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
     Route::get('/orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('/orders/{order:order_number}', [AccountController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order:order_number}/reorder', [AccountController::class, 'reorder'])->name('orders.reorder');
+
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+    Route::post('/wishlist/{product:slug}/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+    Route::get('/addresses', [AddressController::class, 'index'])->name('addresses');
+    Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
+    Route::patch('/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
+    Route::post('/addresses/{address}/default', [AddressController::class, 'setDefault'])->name('addresses.default');
 });
 
 // Static content pages
@@ -99,6 +127,28 @@ Route::post('/assistant/chat', [AssistantController::class, 'chat'])
     ->middleware('throttle:20,1')
     ->name('assistant.chat');
 
+// Served from a route (not a static file) so the Sitemap line carries the correct
+// absolute URL per environment. Keeps crawlers off private/utility paths.
+Route::get('/robots.txt', function () {
+    $lines = [
+        'User-agent: *',
+        'Disallow: /account',
+        'Disallow: /cart',
+        'Disallow: /checkout',
+        'Disallow: /order/',
+        'Disallow: /search',
+        'Disallow: /assistant',
+        '',
+        'Sitemap: '.url('/sitemap.xml'),
+    ];
+
+    return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain']);
+});
+
 Route::get('/sitemap.xml', SitemapController::class);
+
+// Guest order lookup (order number + email) — durable post-purchase access for guests.
+Route::get('/order-lookup', [OrderController::class, 'lookupForm'])->name('orders.lookup');
+Route::post('/order-lookup', [OrderController::class, 'lookup'])->middleware('throttle:6,1')->name('orders.lookup.submit');
 
 Route::get('/order/{order:order_number}', [OrderController::class, 'show'])->name('orders.show');

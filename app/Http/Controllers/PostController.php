@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
@@ -18,13 +20,28 @@ abstract class PostController extends Controller
     /** The blade view namespace for this section (e.g. 'blog', 'press'). */
     abstract protected function viewPrefix(): string;
 
-    public function index(): View
+    /** The published posts for this section, in display order (unexecuted). */
+    protected function publishedPostsQuery(): Builder
     {
-        $posts = Post::published()->type($this->type())
+        return Post::published()->type($this->type())
             ->orderByRaw('published_at IS NULL, published_at DESC')
             ->orderBy('sort_order')
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
+    }
+
+    /**
+     * The published posts for this section, in display order.
+     *
+     * @return Collection<int, Post>
+     */
+    protected function publishedPosts(): Collection
+    {
+        return $this->publishedPostsQuery()->get();
+    }
+
+    public function index(): View
+    {
+        $posts = $this->publishedPosts();
 
         return view($this->viewPrefix().'.index', compact('posts'));
     }
@@ -37,6 +54,9 @@ abstract class PostController extends Controller
             Post::published()->type($this->type())->whereKey($post->getKey())->exists(),
             404
         );
+
+        // "Shop this article" — only surface published products, in pivot order.
+        $post->load(['products' => fn ($q) => $q->published()->with(['media', 'variants'])]);
 
         $related = Post::published()->type($this->type())
             ->whereKeyNot($post->getKey())

@@ -13,10 +13,12 @@ use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\OccasionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\PressController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
@@ -28,15 +30,28 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/collections', [CollectionController::class, 'index'])->name('collections.index');
-Route::get('/collections/{collection:slug}', [CollectionController::class, 'show'])->name('collections.show');
+// Shop — evergreen product categories (Search Demand Map backbone), served at
+// stable /collections/{slug} URLs (e.g. /collections/kaftans). /shop is the hub.
+Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/collections/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 
-Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+// Occasions — permanent, search-driven event pages, populated by occasion tags.
+Route::get('/occasions', [OccasionController::class, 'index'])->name('occasions.index');
+Route::get('/occasions/{tag:slug}', [OccasionController::class, 'show'])->name('occasions.show');
+
+// Lookbooks — editorial / seasonal collections and named campaign lookbooks.
+Route::get('/lookbooks', [CollectionController::class, 'index'])->name('lookbooks.index');
+Route::get('/lookbooks/{collection:slug}', [CollectionController::class, 'show'])->name('lookbooks.show');
+
+// Legacy URL redirects (301) — preserve SEO after the structure change.
+Route::permanentRedirect('/collections', '/shop');
+Route::get('/category/{slug}', fn (string $slug) => redirect('/collections/'.$slug, 301));
 
 Route::get('/atelier', [AtelierController::class, 'index'])->name('atelier');
 
 // Editorial — Blog articles and Press releases (admin-managed via Filament).
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/category/{category:slug}', [BlogController::class, 'category'])->name('blog.category');
 Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/press', [PressController::class, 'index'])->name('press.index');
 Route::get('/press/{post:slug}', [PressController::class, 'show'])->name('press.show');

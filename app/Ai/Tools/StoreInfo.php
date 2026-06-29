@@ -57,7 +57,7 @@ class StoreInfo implements Tool
             ->map(fn (Collection $collection) => [
                 'name' => $collection->name,
                 'year' => $collection->year,
-                'url' => route('collections.show', $collection->slug),
+                'url' => route('lookbooks.show', $collection->slug),
             ])->all();
 
         return json_encode([
@@ -104,7 +104,9 @@ class StoreInfo implements Tool
             'categories' => $categories,
             'collections' => $collections,
             'useful_links' => [
-                'all_collections' => route('collections.index'),
+                'shop' => route('shop.index'),
+                'occasions' => route('occasions.index'),
+                'lookbooks' => route('lookbooks.index'),
                 'search' => route('search'),
                 'about' => route('about'),
                 'contact' => route('contact'),

@@ -52,7 +52,7 @@
         </div>
 
         <div class="mt-10 text-center">
-            <a href="{{ route('collections.index') }}" class="text-xs uppercase tracking-[0.2em] text-accent hover:underline">{{ __('Continue shopping') }}</a>
+            <a href="{{ route('shop.index') }}" class="text-xs uppercase tracking-[0.2em] text-accent hover:underline">{{ __('Continue shopping') }}</a>
         </div>
     </section>
 </x-layouts.storefront>

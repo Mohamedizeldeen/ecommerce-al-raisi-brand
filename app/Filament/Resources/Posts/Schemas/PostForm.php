@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Posts\Schemas;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -60,6 +61,28 @@ class PostForm
                         RichEditor::make('body_ar')
                             ->label('Body (العربية)')
                             ->extraInputAttributes(['dir' => 'rtl'])
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Topic & shopping')
+                    ->columns(2)
+                    // Blog-only: hidden on the Press resource (which shares this form).
+                    ->visible(fn ($livewire) => method_exists($livewire, 'getResource')
+                        && $livewire->getResource() === \App\Filament\Resources\Blog\BlogResource::class)
+                    ->schema([
+                        Select::make('blog_category_id')
+                            ->label('Blog category')
+                            ->relationship('category', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Groups this article under a topic page (Blog only).'),
+                        Select::make('products')
+                            ->label('Shop this article')
+                            ->relationship('products', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Featured products, shown in a “Shop this article” strip below the post.')
                             ->columnSpanFull(),
                     ]),
 

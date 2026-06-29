@@ -2,13 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ProductType;
+use App\Enums\TagGroup;
+use App\Models\BlogCategory;
 use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Coupon;
+use App\Models\Post;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\Showcase;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -39,12 +44,38 @@ class DatabaseSeeder extends Seeder
             'email' => 'customer@example.com',
         ]);
 
-        // --- Categories ------------------------------------------------------
-        $readyToWear = Category::create(['name' => 'Ready-to-Wear', 'slug' => 'ready-to-wear', 'sort_order' => 1]);
-        $accessories = Category::create(['name' => 'Accessories', 'slug' => 'accessories', 'sort_order' => 2]);
-        $soft = Category::create(['name' => 'Soft', 'slug' => 'accessories-soft', 'parent_id' => $accessories->id, 'sort_order' => 1]);
-        $leather = Category::create(['name' => 'Leather', 'slug' => 'accessories-leather', 'parent_id' => $accessories->id, 'sort_order' => 2]);
-        $lifestyle = Category::create(['name' => 'Lifestyle', 'slug' => 'lifestyle', 'sort_order' => 3]);
+        // --- Categories (evergreen SDM garment taxonomy) ---------------------
+        // Each launch category's slug matches its ProductType so its landing page
+        // auto-includes every product of that type. Accessories sits alongside
+        // with attribute sub-categories (Scarves, Bags) as their own landings.
+        $cat = [];
+        foreach (ProductType::garmentCases() as $i => $type) {
+            $cat[$type->value] = Category::create([
+                'name' => $this->bilingual($type->getLabel()),
+                'slug' => $type->slug(),
+                'sort_order' => $i + 1,
+            ]);
+        }
+
+        // Attribute sub-landing under a backbone family (SDM subcategory template,
+        // e.g. "Embroidered Dresses" under Evening Dresses) — curated via the pivot.
+        $embroidered = Category::create([
+            'name' => ['en' => 'Embroidered Dresses', 'ar' => 'الفساتين المطرّزة'],
+            'slug' => 'embroidered-dresses',
+            'parent_id' => $cat[ProductType::EveningDress->value]->id,
+            'sort_order' => 1,
+        ]);
+
+        $accessories = Category::create(['name' => $this->bilingual('Accessories'), 'slug' => 'accessories', 'sort_order' => 20]);
+        $scarves = Category::create(['name' => $this->bilingual('Scarves'), 'slug' => 'scarves', 'parent_id' => $accessories->id, 'sort_order' => 1]);
+        $bags = Category::create(['name' => $this->bilingual('Bags'), 'slug' => 'bags', 'parent_id' => $accessories->id, 'sort_order' => 2]);
+
+        // --- Tags (occasion layer + demoted seasons) -------------------------
+        $weddingGuest = Tag::create(['name' => $this->bilingual('Wedding Guest'), 'slug' => 'wedding-guest', 'group' => TagGroup::Occasion, 'sort_order' => 1]);
+        $eid = Tag::create(['name' => $this->bilingual('Eid & Ramadan'), 'slug' => 'eid-ramadan', 'group' => TagGroup::Occasion, 'sort_order' => 2]);
+        $resort = Tag::create(['name' => $this->bilingual('Resort'), 'slug' => 'resort', 'group' => TagGroup::Occasion, 'sort_order' => 3]);
+        Tag::create(['name' => $this->bilingual('Spring/Summer 25'), 'slug' => 'ss25', 'group' => TagGroup::Season, 'sort_order' => 1]);
+        Tag::create(['name' => $this->bilingual('Autumn/Winter 24'), 'slug' => 'aw24', 'group' => TagGroup::Season, 'sort_order' => 2]);
 
         // --- Collections -----------------------------------------------------
         $echoes = Collection::create(['name' => 'Echoes of Time', 'slug' => 'echoes-of-time', 'type' => 'capsule', 'year' => 2026, 'is_featured' => true, 'sort_order' => 0, 'description' => 'A twenty-year anniversary capsule celebrating two decades of Omani craft.']);
@@ -54,15 +85,27 @@ class DatabaseSeeder extends Seeder
         $ss24 = Collection::create(['name' => 'Spring/Summer 24', 'slug' => 'ss24', 'season' => 'SS24', 'type' => 'seasonal', 'year' => 2024, 'sort_order' => 4]);
         $aw23 = Collection::create(['name' => 'Autumn/Winter 23', 'slug' => 'aw23', 'season' => 'AW23', 'type' => 'seasonal', 'year' => 2023, 'sort_order' => 5]);
 
-        // --- Products --------------------------------------------------------
-        $this->makeProducts(16, $readyToWear, [$ss25, $aw24, $echoes], ['S', 'M', 'L', 'XL'], colorsPerProduct: 2);
-        $this->makeProducts(8, $soft, [$ss25, $voyage], [null], colorsPerProduct: 3);
-        $this->makeProducts(5, $leather, [$aw24, $aw23], ['S', 'M', 'L'], colorsPerProduct: 2);
-        $this->makeProducts(5, $lifestyle, [$voyage, $ss24], [null], colorsPerProduct: 1, singleVariant: true);
+        // --- Products (per evergreen category, with occasion tags) -----------
+        $sizes = ['S', 'M', 'L', 'XL'];
+        $this->makeProducts(6, $cat[ProductType::Kaftan->value], ProductType::Kaftan, [$echoes, $ss25], $sizes, [$eid, $weddingGuest]);
+        $this->makeProducts(6, $cat[ProductType::EveningDress->value], ProductType::EveningDress, [$ss25, $voyage], $sizes, [$weddingGuest, $eid]);
+        $this->makeProducts(6, $cat[ProductType::MaxiDress->value], ProductType::MaxiDress, [$voyage, $ss24], $sizes, [$resort, $weddingGuest]);
+        $this->makeProducts(4, $cat[ProductType::Jumpsuit->value], ProductType::Jumpsuit, [$ss25], $sizes, [$resort]);
+        $this->makeProducts(4, $cat[ProductType::SetCoord->value], ProductType::SetCoord, [$voyage], $sizes, [$resort]);
+        $this->makeProducts(4, $cat[ProductType::Abaya->value], ProductType::Abaya, [$aw24, $aw23], $sizes, [$eid]);
+        $this->makeProducts(3, $cat[ProductType::Jalabiya->value], ProductType::Jalabiya, [$echoes], $sizes, [$eid]);
+        $this->makeProducts(4, $cat[ProductType::ModestDress->value], ProductType::ModestDress, [$ss24], $sizes, [$weddingGuest]);
+        $this->makeProducts(6, $scarves, ProductType::Scarf, [$ss25, $voyage], [null], colorsPerProduct: 3);
+        $this->makeProducts(4, $bags, ProductType::Bag, [$aw24], [null], colorsPerProduct: 1, singleVariant: true);
+
+        // Curate a few evening dresses into the "Embroidered Dresses" sub-landing.
+        Product::ofType(ProductType::EveningDress)->take(2)->get()
+            ->each(fn (Product $product) => $product->categories()->attach($embroidered->id));
 
         // --- Style-it-with pairings (complete the look) ----------------------
-        $accessoryIds = Product::whereHas('categories', fn ($q) => $q->whereIn('slug', ['accessories-soft', 'accessories-leather', 'lifestyle']))->pluck('id')->all();
-        Product::whereHas('categories', fn ($q) => $q->where('slug', 'ready-to-wear'))->get()
+        // Pair each garment with a few accessories (scarves, bags).
+        $accessoryIds = Product::whereHas('categories', fn ($q) => $q->whereIn('slug', ['scarves', 'bags']))->pluck('id')->all();
+        Product::whereHas('categories', fn ($q) => $q->whereNotIn('slug', ['scarves', 'bags', 'accessories']))->get()
             ->each(function (Product $product) use ($accessoryIds) {
                 $pick = collect($accessoryIds)->shuffle()->take(3)->values();
                 $product->pairings()->sync($pick->mapWithKeys(fn ($id, $i) => [$id => ['sort_order' => $i]])->all());
@@ -102,22 +145,89 @@ class DatabaseSeeder extends Seeder
         foreach ($showcases as $showcase) {
             Showcase::create($showcase);
         }
+
+        // --- Blog (categories + articles that link to products) --------------
+        $styling = BlogCategory::create(['name' => ['en' => 'Styling Guides', 'ar' => 'أدلة التنسيق'], 'slug' => 'styling-guides', 'sort_order' => 1]);
+        $heritage = BlogCategory::create(['name' => ['en' => 'Cultural Heritage', 'ar' => 'التراث الثقافي'], 'slug' => 'cultural-heritage', 'sort_order' => 2]);
+
+        $kaftanIds = Product::ofType(ProductType::Kaftan)->pluck('id');
+        $eveningIds = Product::ofType(ProductType::EveningDress)->pluck('id');
+
+        $articles = [
+            [
+                'category' => $styling, 'products' => $kaftanIds->take(3),
+                'title' => ['en' => 'How to Style a Kaftan for Eid', 'ar' => 'كيف تنسّقين القفطان في العيد'],
+                'slug' => 'styling-a-kaftan-for-eid',
+                'excerpt' => ['en' => 'Three effortless ways to wear our kaftans this Eid.', 'ar' => 'ثلاث طرق أنيقة لارتداء قفاطيننا هذا العيد.'],
+            ],
+            [
+                'category' => $styling, 'products' => $eveningIds->take(3),
+                'title' => ['en' => 'Dressing for a Wedding as a Guest', 'ar' => 'إطلالة ضيفة العرس'],
+                'slug' => 'wedding-guest-dressing',
+                'excerpt' => ['en' => 'Occasion dresses that strike the right note.', 'ar' => 'فساتين مناسبات تمنحكِ الإطلالة المثالية.'],
+            ],
+            [
+                'category' => $heritage, 'products' => collect(),
+                'title' => ['en' => 'The Omani Roots of Our Prints', 'ar' => 'الجذور العُمانية لنقوشنا'],
+                'slug' => 'omani-roots-of-our-prints',
+                'excerpt' => ['en' => 'The heritage motifs behind the house.', 'ar' => 'الزخارف التراثية التي تلهم الدار.'],
+            ],
+        ];
+
+        foreach ($articles as $i => $article) {
+            $post = Post::create([
+                'type' => Post::TYPE_BLOG,
+                'blog_category_id' => $article['category']->id,
+                'title' => $article['title'],
+                'slug' => $article['slug'],
+                'excerpt' => $article['excerpt'],
+                'body' => ['en' => '<p>'.$article['excerpt']['en'].'</p>', 'ar' => '<p>'.$article['excerpt']['ar'].'</p>'],
+                'published_at' => now()->subDays($i + 1),
+                'sort_order' => $i,
+                'is_active' => true,
+            ]);
+
+            if ($article['products']->isNotEmpty()) {
+                $post->products()->attach(
+                    $article['products']->values()->mapWithKeys(fn ($id, $j) => [$id => ['sort_order' => $j]])->all()
+                );
+            }
+        }
     }
 
     /**
-     * Create products in a category, link them to collections, and build
-     * size x color variants from the palette.
+     * Build a translatable {en, ar} value, pulling the Arabic from lang/ar.json
+     * when present (falls back to the English string).
+     *
+     * @return array{en: string, ar: string}
+     */
+    private function bilingual(string $en): array
+    {
+        $ar = trans($en, [], 'ar');
+
+        return ['en' => $en, 'ar' => is_string($ar) ? $ar : $en];
+    }
+
+    /**
+     * Create products of a given type in a category, link them to collections
+     * and a random subset of occasion tags, and build size x color variants.
      *
      * @param  array<int, Collection>  $collections
      * @param  array<int, string|null>  $sizes
+     * @param  array<int, Tag>  $occasionTags
      */
-    private function makeProducts(int $count, Category $category, array $collections, array $sizes, int $colorsPerProduct = 2, bool $singleVariant = false): void
+    private function makeProducts(int $count, Category $category, ProductType $type, array $collections, array $sizes, array $occasionTags = [], int $colorsPerProduct = 2, bool $singleVariant = false): void
     {
-        Product::factory()->count($count)->create()->each(function (Product $product) use ($category, $collections, $sizes, $colorsPerProduct, $singleVariant) {
+        Product::factory()->count($count)->create(['product_type' => $type])->each(function (Product $product) use ($category, $collections, $sizes, $occasionTags, $colorsPerProduct, $singleVariant) {
             $product->categories()->attach($category->id);
 
             $pick = collect($collections)->random(rand(1, count($collections)));
             $product->collections()->attach($pick->pluck('id')->all());
+
+            if (! empty($occasionTags)) {
+                $tagPick = collect($occasionTags)->shuffle()->take(rand(1, count($occasionTags)));
+                $product->tags()->attach($tagPick->pluck('id')->all());
+            }
 
             if ($singleVariant) {
                 ProductVariant::factory()->for($product)->create([

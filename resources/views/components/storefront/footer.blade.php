@@ -25,10 +25,12 @@
             <div>
                 <h4 class="text-xs uppercase tracking-[0.2em] text-white/50">{{ __('Shop') }}</h4>
                 <ul class="mt-4 space-y-2 text-sm text-white/80">
-                    <li><a href="/collections" class="hover:text-accent">{{ __('Collections') }}</a></li>
-                    <li><a href="/category/ready-to-wear" class="hover:text-accent">{{ __('Ready-to-Wear') }}</a></li>
-                    <li><a href="/category/accessories" class="hover:text-accent">{{ __('Accessories') }}</a></li>
-                    <li><a href="/category/lifestyle" class="hover:text-accent">{{ __('Lifestyle') }}</a></li>
+                    <li><a href="/shop" class="hover:text-accent">{{ __('Shop All') }}</a></li>
+                    <li><a href="/collections/kaftans" class="hover:text-accent">{{ __('Kaftans') }}</a></li>
+                    <li><a href="/collections/evening-dresses" class="hover:text-accent">{{ __('Evening & Occasion Dresses') }}</a></li>
+                    <li><a href="/collections/maxi-dresses" class="hover:text-accent">{{ __('Maxi & Long Dresses') }}</a></li>
+                    <li><a href="/occasions" class="hover:text-accent">{{ __('Occasions') }}</a></li>
+                    <li><a href="/lookbooks" class="hover:text-accent">{{ __('Lookbooks') }}</a></li>
                 </ul>
             </div>
 

@@ -7,6 +7,7 @@ use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\RelationManagers\VariantsRelationManager;
+use App\Enums\ProductType;
 use App\Models\Product;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -27,6 +28,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -69,6 +71,11 @@ class ProductResource extends Resource
                     ->label('Name (العربية)')
                     ->extraInputAttributes(['dir' => 'rtl']),
                 TextInput::make('slug')->required()->unique(ignoreRecord: true),
+                Select::make('product_type')
+                    ->label('Product type')
+                    ->options(ProductType::class)
+                    ->searchable()
+                    ->helperText('The descriptive garment type. Drives the evergreen category & search landing pages — set this even when the look keeps an editorial name.'),
                 Textarea::make('description')->rows(4)->columnSpanFull(),
                 Textarea::make('description_ar')
                     ->label('Description (العربية)')
@@ -100,6 +107,14 @@ class ProductResource extends Resource
             Section::make('Organisation')->columns(2)->schema([
                 Select::make('categories')->relationship('categories', 'name')->multiple()->preload(),
                 Select::make('collections')->relationship('collections', 'name')->multiple()->preload(),
+                Select::make('tags')
+                    ->relationship('tags', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->label('Tags')
+                    ->helperText('Occasion (Wedding Guest, Eid), season and campaign tags. Occasion tags surface this product on its occasion page.')
+                    ->columnSpanFull(),
                 Select::make('pairings')
                     ->relationship('pairings', 'name')
                     ->multiple()
@@ -147,6 +162,10 @@ class ProductResource extends Resource
                     ->limit(1)
                     ->label('Image'),
                 TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('product_type')
+                    ->label('Type')
+                    ->badge()
+                    ->toggleable(),
                 TextColumn::make('base_price_baisa')
                     ->label('Price')
                     ->formatStateUsing(fn ($state) => format_omr((int) $state))
@@ -163,6 +182,9 @@ class ProductResource extends Resource
                 TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('product_type')
+                    ->label('Product type')
+                    ->options(ProductType::class),
                 TernaryFilter::make('is_active'),
                 TernaryFilter::make('is_featured'),
                 TrashedFilter::make(),

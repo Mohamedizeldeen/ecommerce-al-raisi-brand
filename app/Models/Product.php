@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\ProductType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -24,6 +26,7 @@ class Product extends Model implements HasMedia
 
     protected $casts = [
         'specs' => 'array',
+        'product_type' => ProductType::class,
         'base_price_baisa' => 'integer',
         'compare_at_price_baisa' => 'integer',
         'is_active' => 'boolean',
@@ -55,6 +58,15 @@ class Product extends Model implements HasMedia
     public function collections(): BelongsToMany
     {
         return $this->belongsToMany(Collection::class);
+    }
+
+    /**
+     * Cross-cutting tags — occasion (Wedding Guest, Eid), season (SS25) and
+     * campaign labels. Occasion tags populate the SDM occasion pages.
+     */
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     /**
@@ -115,6 +127,11 @@ class Product extends Model implements HasMedia
     public function scopeFeatured(Builder $query): void
     {
         $query->where('is_featured', true);
+    }
+
+    public function scopeOfType(Builder $query, ProductType|string $type): void
+    {
+        $query->where('product_type', $type instanceof ProductType ? $type->value : $type);
     }
 
     public function getRouteKeyName(): string

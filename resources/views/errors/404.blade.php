@@ -8,9 +8,9 @@
                 class="bg-ink px-9 py-4 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-accent">
                 {{ __('Back to home') }}
             </a>
-            <a href="{{ route('collections.index') }}"
+            <a href="{{ route('shop.index') }}"
                 class="border border-ink px-9 py-4 text-xs uppercase tracking-[0.25em] text-ink transition hover:bg-ink hover:text-white">
-                {{ __('Shop Collections') }}
+                {{ __('Shop') }}
             </a>
         </div>
     </section>

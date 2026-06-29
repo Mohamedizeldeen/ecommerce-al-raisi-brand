@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
@@ -25,6 +27,20 @@ class Post extends Model
         'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];
+
+    /** Topic this article is filed under (SDM blog-category routing). */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(BlogCategory::class, 'blog_category_id');
+    }
+
+    /** Products featured in this article — the "Shop this article" strip. */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class)
+            ->withPivot('sort_order')
+            ->orderByPivot('sort_order');
+    }
 
     public function scopeActive(Builder $query): void
     {

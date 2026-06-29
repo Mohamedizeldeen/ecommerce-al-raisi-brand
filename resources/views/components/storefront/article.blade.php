@@ -36,6 +36,18 @@
         </div>
     @endif
 
+    {{-- Shop this article — commercial products linked to the post (SDM) --}}
+    @if ($post->products->isNotEmpty())
+        <div class="mt-12 border-t border-stone-soft pt-8">
+            <h2 class="mb-6 text-center font-serif text-2xl text-ink">{{ __('Shop this article') }}</h2>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
+                @foreach ($post->products as $product)
+                    <x-storefront.product-card :product="$product" />
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="mt-10 border-t border-stone-soft pt-6">
         <x-storefront.share :title="$post->title" />
     </div>

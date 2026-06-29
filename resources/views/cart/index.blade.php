@@ -5,7 +5,7 @@
         @if ($items->isEmpty())
             <div class="py-16 text-center">
                 <p class="text-stone-500">{{ __('Your bag is empty.') }}</p>
-                <a href="{{ route('collections.index') }}" class="mt-4 inline-block text-xs uppercase tracking-[0.2em] text-accent hover:underline">{{ __('Continue shopping') }}</a>
+                <a href="{{ route('shop.index') }}" class="mt-4 inline-block text-xs uppercase tracking-[0.2em] text-accent hover:underline">{{ __('Continue shopping') }}</a>
             </div>
         @else
             <div class="grid gap-10 lg:grid-cols-3">

@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null, 'image' => null, 'noindex' => false, 'ogType' => 'website'])
+@props(['title' => null, 'description' => null, 'image' => null, 'noindex' => false, 'ogType' => 'website', 'overHero' => false])
 @php($cartCount = app(\App\Services\CartService::class)->count())
 @php($locale = app()->getLocale())
 @php($dir = config('regions.locales.'.$locale.'.dir', 'ltr'))
@@ -52,8 +52,7 @@
 </head>
 <body class="flex min-h-screen flex-col bg-white">
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-[200] focus:top-2 focus:start-2 focus:rounded focus:bg-ink focus:px-4 focus:py-2 focus:text-white">{{ __('Skip to content') }}</a>
-    <x-storefront.announcement />
-    <x-storefront.header />
+    <x-storefront.header :over-hero="$overHero" />
 
     <main id="main" tabindex="-1" class="flex-1">
         {{ $slot }}

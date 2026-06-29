@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TagGroup;
+use App\Models\BlogCategory;
 use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Post;
 use App\Models\Product;
+use App\Models\Tag;
 
 class SitemapController extends Controller
 {
@@ -14,7 +17,9 @@ class SitemapController extends Controller
         // Index/static routes — no lastmod (content isn't tracked per-URL here).
         $urls = collect([
             url('/'),
-            route('collections.index'),
+            route('shop.index'),
+            route('occasions.index'),
+            route('lookbooks.index'),
             route('blog.index'),
             route('press.index'),
             route('atelier'),
@@ -33,8 +38,10 @@ class SitemapController extends Controller
         ];
 
         $urls = $urls
-            ->merge(Collection::active()->get()->map(fn ($c) => $entry($c, route('collections.show', $c))))
+            ->merge(Collection::active()->get()->map(fn ($c) => $entry($c, route('lookbooks.show', $c))))
             ->merge(Category::active()->get()->map(fn ($c) => $entry($c, route('categories.show', $c))))
+            ->merge(Tag::active()->group(TagGroup::Occasion)->get()->map(fn ($t) => $entry($t, route('occasions.show', $t))))
+            ->merge(BlogCategory::active()->get()->map(fn ($c) => $entry($c, route('blog.category', $c))))
             ->merge(Product::published()->get()->map(fn ($p) => $entry($p, route('products.show', $p))))
             ->merge(Post::published()->get()->map(fn ($p) => $entry(
                 $p,

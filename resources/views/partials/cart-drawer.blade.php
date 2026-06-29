@@ -2,7 +2,7 @@
     @if ($items->isEmpty())
         <div class="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
             <p class="text-stone-500">{{ __('Your bag is empty.') }}</p>
-            <a href="{{ route('collections.index') }}" class="text-xs uppercase tracking-[0.2em] text-accent link-underline">{{ __('Continue shopping') }}</a>
+            <a href="{{ route('shop.index') }}" class="text-xs uppercase tracking-[0.2em] text-accent link-underline">{{ __('Continue shopping') }}</a>
         </div>
     @else
         <ul class="flex-1 divide-y divide-stone-soft overflow-y-auto px-6">
